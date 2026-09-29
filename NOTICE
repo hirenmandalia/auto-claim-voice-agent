@@ -1,0 +1,19 @@
+Auto Claim Voice Agent
+Copyright 2026 Hiren Mandalia
+
+This project is a modified version of "Insurance Claim Live Agent Team" from
+awesome-llm-apps by Shubham Saboo, licensed under the Apache License, Version 2.0.
+  https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/voice_ai_agents/insurance_claim_live_agent_team
+
+Changes made in this version (September 2026):
+  - Added a mobile app shell (live_demo/mobile/) that starts the claim from inside an insurer app.
+  - Added signed-in account context so the agent greets by name and skips identity questions.
+  - Added a spoken greeting, echo cancellation, a client-side barge-in gate, and tuned voice detection.
+  - Added scope guardrails: auto claims only and claim topics only, with a deterministic routing gate.
+  - Turned the incident sketch tool off by default and made it configurable.
+  - Added same-Wi-Fi HTTPS access for phones, restricted to private network addresses.
+  - Added erase-on-exit for claims, and removed third-party font requests from the mobile page.
+  - Added setup and run scripts and a scope-gate test suite.
+
+"Wrenfield Insurance" is a made-up name and the screens are illustrative. This is a demo with mock policy data. It is not an
+insurance product and is not affiliated with or endorsed by any insurer.

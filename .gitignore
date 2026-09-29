@@ -1,0 +1,19 @@
+# Secrets and local-only files: never commit these
+.env
+certs/
+*.pem
+*.crt
+*.key
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# OS / editor
+.DS_Store
+.claude/
+.idea/
+.vscode/
+*.log

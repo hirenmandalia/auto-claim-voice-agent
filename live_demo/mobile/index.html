@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#F3F6F6" />
+    <title>Wrenfield</title>
+    <link rel="stylesheet" href="./mobile.css?v=3" />
+  </head>
+  <body>
+    <div class="app" id="app">
+
+      <!-- ============ HOME ============ -->
+      <section class="screen active" data-screen="home">
+        <header class="topbar">
+          <span class="wordmark">wrenfield</span>
+          <button class="avatar-btn" type="button" aria-label="Account">JL</button>
+        </header>
+        <div class="scroll">
+          <p class="greeting">Good morning, <strong>Jordan</strong></p>
+
+          <div class="card score-card">
+            <div class="score-head">
+              <span class="card-title">Safety Score</span>
+              <span class="chip chip-green">Top tier</span>
+            </div>
+            <div class="gauge-wrap">
+              <svg class="gauge" viewBox="0 0 200 120" aria-hidden="true">
+                <path d="M20 110 A80 80 0 0 1 60 40" stroke="#F7B9B0" stroke-width="18" fill="none" stroke-linecap="round"/>
+                <path d="M66 36 A80 80 0 0 1 134 36" stroke="#FFE2A6" stroke-width="18" fill="none"/>
+                <path d="M140 40 A80 80 0 0 1 180 110" stroke="#8FE0B4" stroke-width="18" fill="none" stroke-linecap="round"/>
+                <polygon points="164,84 174,92 166,96" fill="#14142B"/>
+              </svg>
+              <div class="gauge-num">92</div>
+            </div>
+            <p class="score-sub">Top-tier driving. Keep rolling.</p>
+            <div class="tiles">
+              <div class="tile tile-blue"><strong>0</strong><span>Hard brakes</span></div>
+              <div class="tile tile-lilac"><strong>0</strong><span>Rapid accel.</span></div>
+              <div class="tile tile-peach"><strong>0<small>%</small></strong><span>High speeds</span></div>
+            </div>
+          </div>
+
+          <div class="card policy-mini" data-go="policy" role="button" tabindex="0">
+            <div class="policy-row">
+              <div class="car-badge" aria-hidden="true">🚐</div>
+              <div class="policy-text">
+                <strong>2013 Toyota Sienna</strong>
+                <span>Personal auto · AUTO-90210</span>
+              </div>
+              <span class="chip chip-green">Active</span>
+            </div>
+          </div>
+
+          <p class="section-label">Quick actions</p>
+          <div class="actions">
+            <button class="action primary" type="button" data-open-claim>
+              <span class="action-ico">🛠️</span>
+              <span>File a claim</span>
+            </button>
+            <button class="action" type="button">
+              <span class="action-ico">🚨</span>
+              <span>Roadside</span>
+            </button>
+            <button class="action" type="button">
+              <span class="action-ico">🪪</span>
+              <span>ID card</span>
+            </button>
+          </div>
+
+          <p class="section-label">Latest trip</p>
+          <div class="card trip-card">
+            <div class="trip-head"><strong>8:00 am – 8:30 am</strong><span>8 mi</span></div>
+            <div class="trip-map" aria-hidden="true">
+              <svg viewBox="0 0 320 120" preserveAspectRatio="none">
+                <rect width="320" height="120" fill="#EEF3EA"/>
+                <path d="M0 30 H320 M0 70 H320 M0 100 H320 M60 0 V120 M150 0 V120 M240 0 V120" stroke="#fff" stroke-width="6"/>
+                <path d="M30 60 C80 40, 120 90, 170 70 S260 40, 290 55" stroke="#0F6E6E" stroke-width="5" fill="none" stroke-linecap="round"/>
+                <circle cx="30" cy="60" r="6" fill="#fff" stroke="#14142B" stroke-width="3"/>
+                <circle cx="290" cy="55" r="7" fill="#E5484D"/>
+              </svg>
+            </div>
+            <div class="trip-foot"><span>Taylor St, San Jose</span><span>Coleman Ave, San Jose</span></div>
+          </div>
+          <div class="spacer"></div>
+        </div>
+        <nav class="tabbar">
+          <button class="tab on" type="button" data-go="home"><span class="tab-ico">⌂</span>Home</button>
+          <button class="tab" type="button"><span class="tab-ico">◎</span>Drive</button>
+          <button class="tab" type="button" data-go="policy"><span class="tab-ico">▤</span>Policy</button>
+          <button class="tab" type="button"><span class="tab-ico">?</span>Help</button>
+        </nav>
+      </section>
+
+      <!-- ============ POLICY ============ -->
+      <section class="screen" data-screen="policy">
+        <header class="topbar">
+          <button class="back-btn" type="button" data-go="home" aria-label="Back">‹</button>
+          <span class="topbar-title">Your policy</span>
+          <span class="topbar-spacer"></span>
+        </header>
+        <div class="scroll">
+          <div class="card hero-policy">
+            <span class="card-kicker">Personal auto</span>
+            <h2>2013 Toyota Sienna</h2>
+            <p class="muted">Policy AUTO-90210 · Jordan Lee</p>
+            <div class="hero-row">
+              <div><small>Status</small><strong class="green">Active</strong></div>
+              <div><small>Drivers</small><strong>2</strong></div>
+              <div><small>Est. premium</small><strong>$98<small>/mo</small></strong></div>
+            </div>
+          </div>
+
+          <p class="section-label">Coverages</p>
+          <div class="card list-card">
+            <div class="li"><span>Bodily injury</span><strong>100/300</strong></div>
+            <div class="li"><span>Collision</span><strong>$500 deductible</strong></div>
+            <div class="li"><span>Comprehensive</span><strong>$250 deductible</strong></div>
+            <div class="li"><span>Medical payments</span><strong>$5,000</strong></div>
+            <div class="li"><span>Rental reimbursement</span><strong>$40/day · 30 days</strong></div>
+          </div>
+
+          <p class="section-label">Need help?</p>
+          <button class="btn btn-primary" type="button" data-open-claim>File a claim</button>
+          <button class="btn btn-secondary" type="button">Get roadside assistance</button>
+          <div class="spacer"></div>
+        </div>
+        <nav class="tabbar">
+          <button class="tab" type="button" data-go="home"><span class="tab-ico">⌂</span>Home</button>
+          <button class="tab" type="button"><span class="tab-ico">◎</span>Drive</button>
+          <button class="tab on" type="button"><span class="tab-ico">▤</span>Policy</button>
+          <button class="tab" type="button"><span class="tab-ico">?</span>Help</button>
+        </nav>
+      </section>
+
+      <!-- ============ CLAIM START SHEET ============ -->
+      <div class="sheet-bg" id="claimSheet" hidden>
+        <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+          <div class="handle"></div>
+          <div class="sheet-orb" aria-hidden="true"><span></span></div>
+          <h3 id="sheetTitle">Report a claim</h3>
+          <p class="sheet-copy">Tell Wrenfield Claims what happened. It listens, writes the claim as you talk, and can look at the damage through your camera.</p>
+          <button class="btn btn-primary" type="button" id="startVoiceClaim">🎙 Start with voice</button>
+          <button class="btn btn-secondary" type="button" id="startTextClaim">Type instead</button>
+          <button class="btn btn-ghost" type="button" id="closeSheet">Not now</button>
+          <p class="fineprint">Auto claims only. You'll be asked for microphone and camera access. Your voice and camera are processed by Google Gemini to run the conversation. Nothing is saved: the claim is forgotten when you leave.</p>
+        </div>
+      </div>
+
+      <!-- ============ LIVE CLAIM ============ -->
+      <section class="screen claim" data-screen="claim">
+        <header class="topbar claim-bar">
+          <button class="back-btn" type="button" id="endClaim" aria-label="End">‹</button>
+          <div class="claim-title">
+            <span class="topbar-title">Wrenfield Claims</span>
+            <span id="callStatus" class="status">Connecting…</span>
+          </div>
+          <button class="text-btn" type="button" id="reviewBtn" hidden>Review</button>
+        </header>
+
+        <div class="progress-track" aria-hidden="true"><div id="progressBar" class="progress-fill"></div></div>
+
+        <div class="scroll claim-scroll" id="claimScroll">
+          <div id="cameraStage" class="camera-stage" hidden>
+            <video id="cameraPreview" autoplay muted playsinline></video>
+            <span class="camera-tag"><span class="rec-dot"></span> Wrenfield can see this</span>
+          </div>
+
+          <div class="agent-row">
+            <div id="orb" class="orb"><span></span><span></span><span></span></div>
+            <div class="agent-bubble" id="agentBubble">Connecting you to Wrenfield Claims…</div>
+          </div>
+
+          <div id="youBubble" class="you-bubble" hidden></div>
+
+          <p class="section-label">Claim notes</p>
+          <div class="card notes-card">
+            <ul id="notes" class="notes"></ul>
+            <div id="stamp" class="stamp" hidden></div>
+          </div>
+
+          <div id="evidenceWrap" hidden>
+            <p class="section-label">Evidence</p>
+            <div id="evidence" class="evidence"></div>
+          </div>
+
+          <div id="neededWrap" hidden>
+            <p class="section-label">Still needed</p>
+            <div id="needed" class="chips"></div>
+          </div>
+
+          <details class="transcript-details">
+            <summary>Full conversation</summary>
+            <div id="transcript" class="transcript"></div>
+          </details>
+          <div class="spacer"></div>
+        </div>
+
+        <form id="textForm" class="text-entry" hidden>
+          <input id="textInput" type="text" autocomplete="off" placeholder="Type what happened…" aria-label="Type a message" />
+          <button type="submit" aria-label="Send">➤</button>
+        </form>
+
+        <div class="controls">
+          <button id="cameraButton" class="ctl" type="button" aria-label="Show camera">
+            <span class="ctl-ico">📷</span><span class="ctl-label">Camera</span>
+          </button>
+          <button id="micButton" class="ctl mic" type="button" aria-label="Talk">
+            <span class="ctl-ico">🎙</span><span class="ctl-label">Talk</span>
+          </button>
+          <button id="keyboardButton" class="ctl" type="button" aria-label="Type">
+            <span class="ctl-ico">⌨️</span><span class="ctl-label">Type</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ============ CLAIM DONE ============ -->
+      <section class="screen" data-screen="done">
+        <header class="topbar">
+          <span class="topbar-spacer"></span>
+          <span class="topbar-title">Claim started</span>
+          <span class="topbar-spacer"></span>
+        </header>
+        <div class="scroll">
+          <div class="done-badge" aria-hidden="true">✓</div>
+          <h2 class="center">You're all set, Jordan</h2>
+          <p class="muted center">Claim <strong id="claimNumber">CLM-000000</strong></p>
+
+          <div class="card list-card" id="doneSummary"></div>
+
+          <p class="section-label">What happens next</p>
+          <div class="card steps">
+            <div class="step"><span class="step-n">1</span><div><strong>Adjuster review</strong><span>Your notes and photos are in the packet.</span></div></div>
+            <div class="step"><span class="step-n">2</span><div><strong>We'll call you</strong><span>Usually within one business day.</span></div></div>
+            <div class="step"><span class="step-n">3</span><div><strong>Repairs and rental</strong><span>Rental reimbursement is on your policy.</span></div></div>
+          </div>
+
+          <a id="downloadPacket" class="btn btn-secondary" href="#" download>Download adjuster packet</a>
+          <button class="btn btn-primary" type="button" id="doneHome">Back to home</button>
+          <div class="spacer"></div>
+        </div>
+      </section>
+
+    </div>
+    <canvas id="frameCanvas" hidden></canvas>
+    <script src="./mobile.js?v=3"></script>
+  </body>
+</html>
