@@ -46,8 +46,6 @@ TYPE_REQUIRED_DOCS: dict[str, list[tuple[str, str]]] = {
     "auto_collision": [
         ("Photos of vehicles and scene", "Documents impact location and visible damage."),
         ("Police report or incident exchange form", "Confirms crash facts and involved parties."),
-        ("Repair estimate or tow/storage invoice", "Supports vehicle damage costs."),
-        ("Medical documentation for any injuries", "Supports injury-related escalation and benefits."),
         ("Other driver and witness information", "Helps liability review."),
     ],
     "theft_property_loss": [
@@ -79,7 +77,7 @@ TYPE_REQUIRED_DOCS: dict[str, list[tuple[str, str]]] = {
 BLOCKING_FIELD_QUESTIONS = {
     "policyholder_name": "What is your full name as it appears on the policy?",
     "policy_number": "What is the policy number, if you have it available?",
-    "contact_method": "What is the best phone number or email for the adjuster to reach you?",
+    "contact_method": "Would you prefer the adjuster reach you by phone or by email? We have both on file.",
     "date_of_loss": "When did the loss happen?",
     "loss_location": "Where did the loss happen?",
     "loss_description": "Can you briefly describe what happened?",
@@ -173,14 +171,21 @@ def _without_negated_safety_mentions(text: str) -> str:
 
 
 def _has_positive_safety_language(text: str) -> bool:
-    return bool(re.search(r"\b(injur\w*|hurt|pain|fractur\w*|bleeding|hospital|urgent care|ambulance|unsafe|electrical|sewage|mold|hazard\w*|danger|no place to live)\b", _without_negated_safety_mentions(text), re.I))
+    return bool(re.search(r"\b(injur\w*|hurt\w*|pain\w*|fractur\w*|bleeding|hospital|urgent care|ambulance|unsafe|electrical|sewage|mold|hazard\w*|danger|no place to live)\b", _without_negated_safety_mentions(text), re.I))
 
 
 def _positive_safety_concerns(claim: ClaimNarrative) -> list[str]:
+    """Only a *present* injury or hazard escalates. An *uncertain* one (the claimant simply has not answered
+    yet, typical right after the opening safety question) used to escalate too, which flashed
+    "Escalated to a person" for one notes cycle on ordinary fender-benders."""
     if claim.safety_facts:
-        return [f.description for f in claim.safety_facts if f.status in {"present", "uncertain"}]
+        return [f.description for f in claim.safety_facts if f.status == "present"]
     values = [*claim.injuries_or_safety_concerns, claim.loss_description, claim.raw_narrative_summary]
     return [text for text in values if _has_positive_safety_language(text)]
+
+
+def _uncertain_safety_concerns(claim: ClaimNarrative) -> list[str]:
+    return [f.description for f in claim.safety_facts if f.status == "uncertain"]
 
 
 def _document_record(document: str, claim: ClaimNarrative):
@@ -249,7 +254,7 @@ def _next_claimant_message(
         )
 
     if route == "policy_review":
-        return "The policy details need human review. Please confirm the policy number, policyholder, and loss date. This demo prepares a packet; it does not contact an adjuster."
+        return "The policy details need human review. Please confirm the policy number, policyholder, and loss date. Your packet has not been submitted to an adjuster yet."
 
     for field_name in missing:
         if field_name in BLOCKING_FIELD_QUESTIONS:
@@ -304,7 +309,16 @@ def validate_required_claim_fields(claim_value: Any) -> dict[str, Any]:
     if claim.estimated_loss_usd is None:
         warnings.append("Estimated loss amount was not supplied.")
 
-    missing.extend(claim.missing_or_uncertain_facts)
+    # A contact preference is complete: the insurer has the phone number and email on file.
+    contact_known = not _blank(claim.contact_method)
+    for fact in claim.missing_or_uncertain_facts:
+        if contact_known and re.search(r"\b(email|e-mail|phone|contact|reach)\b", fact, re.IGNORECASE):
+            continue
+        # Documents and third-party details belong to the evidence checklist, not the blocking facts.
+        # Left here, "other driver's insurance details" kept the claim from ever closing.
+        if re.search(r"\b(other (driver|party|vehicle)|drivers?|witness(es)?|insurance (info|information|details)|police|reports?|photos?|pictures?|estimates?|receipts?|invoices?|plates?|licen[sc]e)\b", fact, re.IGNORECASE):
+            continue
+        missing.append(fact)
     missing = _dedupe(missing)
 
     validation = FieldValidation(
@@ -431,7 +445,9 @@ def apply_coverage_and_evidence_rules(
         )
 
     if _positive_safety_concerns(claim):
-        add("SAFE-001", "urgent", "A present or uncertain safety concern needs immediate human review.", "emergency_escalation")
+        add("SAFE-001", "urgent", "A present safety concern needs immediate human review.", "emergency_escalation")
+    elif _uncertain_safety_concerns(claim):
+        add("SAFE-002", "medium", "Injury status not confirmed yet; confirm whether anyone was hurt.", "adjuster_review")
     review = policy_review(claim)
     for issue in review:
         add("POLICY-001", "high", issue, "adjuster_review")

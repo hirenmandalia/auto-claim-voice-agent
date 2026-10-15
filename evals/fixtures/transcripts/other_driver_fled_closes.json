@@ -1,0 +1,9 @@
+{
+  "why": "Incident: 'other driver's insurance details' stuck in missing facts and the claim never closed.",
+  "expect": {
+    "closing_allowed": true,
+    "core_missing": [],
+    "contact_method_contains": "phone"
+  },
+  "text": "Reference clock: 2026-10-15T15:00:00-07:00\nVerified app account context (from the claimant's signed-in insurer app, treat as confirmed facts): policyholder name Jordan Lee, policy number AUTO-90210, vehicle 2013 Toyota Sienna\nRole-labeled dialogue:\n[1] Agent: Hello Jordan, are you and everyone else in a safe place?\n[2] Claimant: Yes, all safe. A car hit my van from behind on Coleman Ave in San Jose this morning and sped off. Call me on the phone.\n[3] Agent: Any photos? [4] Claimant: Not yet.\n[5] Agent: Police report? [6] Claimant: No.\n[7] Agent: Other driver details? [8] Claimant: No, they fled.\n"
+}

@@ -1,0 +1,8 @@
+{
+  "why": "Incident: extractor listed 'Specific email address' as missing after the claimant chose email.",
+  "expect": {
+    "core_missing": [],
+    "contact_method_contains": "email"
+  },
+  "text": "Reference clock: 2026-10-15T15:00:00-07:00\nVerified app account context (from the claimant's signed-in insurer app, treat as confirmed facts): policyholder name Jordan Lee, policy number AUTO-90210, vehicle 2013 Toyota Sienna\nRole-labeled dialogue:\n[1] Agent: Would you prefer the adjuster reach you by phone or by email?\n[2] Claimant: Email. Someone dented my passenger door in the Target lot on Coleman Ave in San Jose an hour ago, nobody hurt.\n"
+}

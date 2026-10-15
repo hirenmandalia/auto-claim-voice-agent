@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="theme-color" content="#F3F6F6" />
+    <meta name="theme-color" content="#F5F4FA" />
     <title>Wrenfield</title>
-    <link rel="stylesheet" href="./mobile.css?v=3" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./mobile.css?v=1" />
   </head>
   <body>
     <div class="app" id="app">
@@ -77,7 +80,7 @@
               <svg viewBox="0 0 320 120" preserveAspectRatio="none">
                 <rect width="320" height="120" fill="#EEF3EA"/>
                 <path d="M0 30 H320 M0 70 H320 M0 100 H320 M60 0 V120 M150 0 V120 M240 0 V120" stroke="#fff" stroke-width="6"/>
-                <path d="M30 60 C80 40, 120 90, 170 70 S260 40, 290 55" stroke="#0F6E6E" stroke-width="5" fill="none" stroke-linecap="round"/>
+                <path d="M30 60 C80 40, 120 90, 170 70 S260 40, 290 55" stroke="#5B2BE0" stroke-width="5" fill="none" stroke-linecap="round"/>
                 <circle cx="30" cy="60" r="6" fill="#fff" stroke="#14142B" stroke-width="3"/>
                 <circle cx="290" cy="55" r="7" fill="#E5484D"/>
               </svg>
@@ -145,7 +148,7 @@
           <button class="btn btn-primary" type="button" id="startVoiceClaim">🎙 Start with voice</button>
           <button class="btn btn-secondary" type="button" id="startTextClaim">Type instead</button>
           <button class="btn btn-ghost" type="button" id="closeSheet">Not now</button>
-          <p class="fineprint">Auto claims only. You'll be asked for microphone and camera access. Your voice and camera are processed by Google Gemini to run the conversation. Nothing is saved: the claim is forgotten when you leave.</p>
+          <p class="fineprint">You'll be asked for microphone and camera access. Nothing is sent to an adjuster in this demo.</p>
         </div>
       </div>
 
@@ -157,7 +160,7 @@
             <span class="topbar-title">Wrenfield Claims</span>
             <span id="callStatus" class="status">Connecting…</span>
           </div>
-          <button class="text-btn" type="button" id="reviewBtn" hidden>Review</button>
+          <button class="text-btn" type="button" id="reviewBtn" hidden>Review &amp; submit</button>
         </header>
 
         <div class="progress-track" aria-hidden="true"><div id="progressBar" class="progress-fill"></div></div>
@@ -165,7 +168,7 @@
         <div class="scroll claim-scroll" id="claimScroll">
           <div id="cameraStage" class="camera-stage" hidden>
             <video id="cameraPreview" autoplay muted playsinline></video>
-            <span class="camera-tag"><span class="rec-dot"></span> Wrenfield can see this</span>
+            <span class="camera-tag"><span class="rec-dot"></span> Agent can see this</span>
           </div>
 
           <div class="agent-row">
@@ -175,7 +178,7 @@
 
           <div id="youBubble" class="you-bubble" hidden></div>
 
-          <p class="section-label">Claim notes</p>
+          <p class="section-label">Claim notes <span id="notesPill" class="notes-pill" hidden>✎ taking notes…</span></p>
           <div class="card notes-card">
             <ul id="notes" class="notes"></ul>
             <div id="stamp" class="stamp" hidden></div>
@@ -245,6 +248,6 @@
 
     </div>
     <canvas id="frameCanvas" hidden></canvas>
-    <script src="./mobile.js?v=3"></script>
+    <script src="./mobile.js?v=1"></script>
   </body>
 </html>

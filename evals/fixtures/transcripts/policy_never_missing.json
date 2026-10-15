@@ -1,0 +1,9 @@
+{
+  "why": "Incident: the agent asked for the policy number. The verified account context must always fill it.",
+  "expect": {
+    "policy_number": "AUTO-90210",
+    "policyholder_name_contains": "Jordan",
+    "core_missing": []
+  },
+  "text": "Reference clock: 2026-10-15T15:00:00-07:00\nVerified app account context (from the claimant's signed-in insurer app, treat as confirmed facts): policyholder name Jordan Lee, policy number AUTO-90210, vehicle 2013 Toyota Sienna\nRole-labeled dialogue:\n[1] Agent: Hello Jordan, are you safe?\n[2] Claimant: Yes. Minor fender bender yesterday evening at First St and Santa Clara St in San Jose, nobody hurt, text or phone is fine.\n"
+}

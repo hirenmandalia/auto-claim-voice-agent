@@ -1,0 +1,9 @@
+{
+  "why": "Low-severity property-only claim, no third party. Must not escalate; checklist still applies.",
+  "expect": {
+    "route_not": "emergency_escalation",
+    "closing_allowed": true,
+    "date_of_loss": "2026-10-15"
+  },
+  "text": "Reference clock: 2026-10-15T15:00:00-07:00\nVerified app account context (from the claimant's signed-in insurer app, treat as confirmed facts): policyholder name Jordan Lee, policy number AUTO-90210, vehicle 2013 Toyota Sienna\nRole-labeled dialogue:\n[1] Agent: Hello Jordan, are you and everyone else in a safe place?\n[2] Claimant: Yes. A shopping cart hit my van at the Safeway on Coleman Ave in San Jose this morning and scratched the passenger door. Email is best.\n[3] Agent: Photos? [4] Claimant: I can send them later.\n[5] Agent: Police report? [6] Claimant: No, it was just a cart.\n[7] Agent: Anyone else involved or any witness? [8] Claimant: No.\n"
+}

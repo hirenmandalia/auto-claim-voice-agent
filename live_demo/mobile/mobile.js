@@ -1,4 +1,4 @@
-// Mobile app shell (fictional insurer: Wrenfield) for the live claim agent.
+// Mobile app shell for the Insurance Claim Live Agent Team demo.
 // Same backend protocol as ../app.js, wrapped in the insurer app's screens.
 
 const $ = (sel) => document.querySelector(sel);
@@ -26,6 +26,7 @@ const textForm = $("#textForm");
 const textInput = $("#textInput");
 const reviewBtn = $("#reviewBtn");
 const claimScroll = $("#claimScroll");
+const notesPill = $("#notesPill");
 
 // The signed-in account. In the real app this comes from the session; here it matches the mock policy directory.
 const ACCOUNT = {
@@ -42,10 +43,29 @@ const FRAME_WIDTH = 512;
 const MIC_CONSTRAINTS = { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 };
 // Client-side barge-in gate: while the agent is speaking, only speech clearly louder than the
 // room gets through; everything else is sent as silence so the stream stays continuous.
-const BARGE_RMS = 0.04;          // roughly "talking at normal volume near the phone"
-const BARGE_HOLD_CHUNKS = 3;     // ~250 ms of sustained sound before it counts as speech
+const BARGE_RMS = 0.08;          // loud, close speech only (the phone speaker rarely reaches this after echo cancellation)
+const BARGE_HOLD_CHUNKS = 5;     // ~430 ms of sustained sound before it counts as an interruption
 const NOISE_FLOOR_RMS = 0.006;   // below this, send silence even when the agent is quiet
+const ECHO_TAIL_MS = 700;        // keep the mic muted briefly after the agent stops: speaker echo trails the audio
 let loudChunks = 0;
+let lastPlaybackEnd = 0;
+let reportedSpeaking = false;
+let lastActivitySent = 0;
+function reportActivity(speaking) {
+  // Tell the server the moment the phone hears the claimant, so a quiet-check never fires over their words.
+  if (!liveSocket || liveSocket.readyState !== WebSocket.OPEN) return;
+  const now = performance.now();
+  if (speaking === reportedSpeaking && now - lastActivitySent < 1000) return;
+  if (speaking !== reportedSpeaking || speaking) {
+    reportedSpeaking = speaking; lastActivitySent = now;
+    liveSocket.send(JSON.stringify({ type: "activity", speaking }));
+  }
+}
+function reportPlayback(playing) {
+  if (!liveSocket || liveSocket.readyState !== WebSocket.OPEN) return;
+  liveSocket.send(JSON.stringify({ type: "playback", playing }));
+}
+let bargeInAllowed = false;      // mirrors the server's FNOL_BARGE_IN; fetched from /api/health
 
 const routeLabels = {
   emergency_escalation: ["Escalated to a person", "danger"],
@@ -58,7 +78,7 @@ const routeLabels = {
 const blockerQuestions = {
   policyholder_name: "Your name",
   policy_number: "Policy number",
-  contact_method: "Best way to reach you",
+  contact_method: "Phone or email?",
   date_of_loss: "When it happened",
   loss_location: "Where it happened",
   loss_description: "What happened",
@@ -87,7 +107,6 @@ let isRecording = false;
 let nextPlaybackTime = 0;
 let sessionId = null;
 let state = null;
-let speakingTimer = null;
 let autoStartVoice = false;
 
 /* ---------- navigation ---------- */
@@ -106,10 +125,10 @@ $("#startVoiceClaim").addEventListener("click", () => beginClaim(true));
 $("#startTextClaim").addEventListener("click", () => beginClaim(false));
 $("#endClaim").addEventListener("click", () => {
   if (claimantHasSpoken() && !confirm("Leave this claim? Your notes are kept for 30 minutes.")) return;
-  forgetSession();
+  disconnectLive();
   go("home");
 });
-$("#doneHome").addEventListener("click", () => { forgetSession(); go("home"); });
+$("#doneHome").addEventListener("click", () => go("home"));
 reviewBtn.addEventListener("click", finishClaim);
 
 async function beginClaim(withVoice) {
@@ -166,9 +185,10 @@ function render() {
   renderTranscript();
   const progress = Number(state.progress || 0);
   progressBar.style.width = `${Math.max(4, progress)}%`;
-  reviewBtn.hidden = state.route === "out_of_scope" || !(state.route === "ready_for_adjuster" || progress >= 80);
+  reviewBtn.hidden = state.route === "out_of_scope" || !(state.closed || state.closing_allowed || state.route === "ready_for_adjuster" || progress >= 80);
   const busy = processing || (state.tool_activity || []).some((item) => item.phase === "running");
   orb.classList.toggle("thinking", busy && !orb.classList.contains("speaking"));
+  setTakingNotes(busy && !orb.classList.contains("speaking") && claimantHasSpoken());
   $("#downloadPacket").href = sessionId ? `${API_ORIGIN}/api/sessions/${sessionId}/packet` : "#";
 }
 
@@ -231,7 +251,7 @@ function renderEvidence() {
     <figure data-key="${escapeHtml(p.id)}">
       <img src="${p.data_url}" alt="Evidence photo" />
       <figcaption>${escapeHtml(p.caption)}</figcaption>
-      <span class="tag ${p.confirmed ? "" : "unconfirmed"}">${p.confirmed ? "Confirmed" : "Needs a closer look"}</span>
+      <span class="tag ${p.confirmed ? "" : "unconfirmed"}">${p.lighting === "poor" ? "Too dark, retake" : p.confirmed ? "Confirmed" : "Needs a closer look"}</span>
     </figure>`);
   if (sketch) cards.push(`
     <figure data-key="sketch-${sketch.version}">
@@ -268,7 +288,7 @@ function renderStamp() {
 function renderTranscript() {
   transcriptEl.innerHTML = (state.transcript || []).map((turn) => {
     const cls = turn.speaker === "Agent" ? "agent" : turn.speaker === "System" ? "system" : "claimant";
-    const who = turn.speaker === "Agent" ? "Wrenfield" : turn.speaker === "System" ? "Note" : "You";
+    const who = turn.speaker === "Agent" ? "Agent" : turn.speaker === "System" ? "Note" : "You";
     return `<div class="turn ${cls}"><span class="who">${who}</span>${escapeHtml(turn.text)}</div>`;
   }).join("");
 }
@@ -334,6 +354,7 @@ async function createSession() {
     sessionId = payload.session_id;
     sessionStorage.setItem("claimSession", sessionId);
     setState(payload.state);
+    api("/api/health").then((h) => { bargeInAllowed = Boolean(h.barge_in); }).catch(() => {});
     setStatus(payload.has_api_key ? "Ready" : "Service unavailable", payload.has_api_key ? "" : "danger");
   } catch (error) {
     setStatus("Can't reach Wrenfield Claims", "danger");
@@ -364,6 +385,7 @@ function connectLive() {
       else if (message.type === "audio") playPcm24(message.data);
       else if (message.type === "state") applyServerState(message.state);
       else if (message.type === "interrupted") stopPlayback();
+      else if (message.type === "lighting") setLighting(message.dark, message.issue);
       else if (message.type === "error") {
         processing = false;
         appendSystem(message.message);
@@ -398,6 +420,36 @@ function disconnectLive() {
   if (state) clearBusy();
 }
 
+/* ---------- "taking notes" cue: soft keystrokes while the claim notes are being written ---------- */
+let typingTimer = null;
+let typingNoise = null;
+function keystroke() {
+  if (!audioContext || audioContext.state !== "running") return;
+  if (!typingNoise) {
+    const len = Math.floor(audioContext.sampleRate * 0.03);
+    typingNoise = audioContext.createBuffer(1, len, audioContext.sampleRate);
+    const d = typingNoise.getChannelData(0);
+    for (let i = 0; i < len; i += 1) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  }
+  const src = audioContext.createBufferSource();
+  src.buffer = typingNoise;
+  const filter = audioContext.createBiquadFilter();
+  filter.type = "bandpass"; filter.frequency.value = 1800 + Math.random() * 1400; filter.Q.value = 1.2;
+  const gain = audioContext.createGain();
+  gain.gain.value = 0.035 + Math.random() * 0.02;
+  src.connect(filter); filter.connect(gain); gain.connect(audioContext.destination);
+  src.start();
+}
+function setTakingNotes(active) {
+  notesPill.hidden = !active;
+  if (active && !typingTimer) {
+    const tick = () => { keystroke(); typingTimer = setTimeout(tick, 70 + Math.random() * 140 + (Math.random() < 0.15 ? 400 : 0)); };
+    typingTimer = setTimeout(tick, 200);
+  } else if (!active && typingTimer) {
+    clearTimeout(typingTimer); typingTimer = null;
+  }
+}
+
 /* ---------- audio ---------- */
 async function unlockAudio() {
   if (!window.AudioContext && !window.webkitAudioContext) return;
@@ -408,6 +460,8 @@ function stopPlayback() {
   for (const source of playbackSources) { try { source.stop(); } catch (_) {} }
   playbackSources.clear();
   nextPlaybackTime = audioContext?.currentTime || 0;
+  lastPlaybackEnd = performance.now();
+  if (orb.classList.contains("speaking")) reportPlayback(false);
   orb.classList.remove("speaking");
 }
 function playPcm24(base64) {
@@ -424,11 +478,13 @@ function playPcm24(base64) {
   source.connect(audioContext.destination);
   const startAt = Math.max(audioContext.currentTime, nextPlaybackTime);
   playbackSources.add(source);
-  source.onended = () => { playbackSources.delete(source); if (!playbackSources.size) orb.classList.remove("speaking"); };
+  source.onended = () => { playbackSources.delete(source); if (!playbackSources.size) { orb.classList.remove("speaking"); lastPlaybackEnd = performance.now(); reportPlayback(false); } };
   source.start(startAt);
   nextPlaybackTime = startAt + audioBuffer.duration;
+  if (!orb.classList.contains("speaking")) reportPlayback(true);
   orb.classList.add("speaking");
   orb.classList.remove("thinking");
+  setTakingNotes(false);
 }
 
 async function sendClaimantTurn(text) {
@@ -458,9 +514,12 @@ function wireMic(stream) {
     if (!liveSocket || liveSocket.readyState !== WebSocket.OPEN) return;
     const samples = event.inputBuffer.getChannelData(0);
     const rms = rmsOf(samples);
-    const agentSpeaking = playbackSources.size > 0;
+    const agentSpeaking = playbackSources.size > 0 || (performance.now() - lastPlaybackEnd) < ECHO_TAIL_MS;
     let passThrough;
-    if (agentSpeaking) {
+    if (agentSpeaking && !bargeInAllowed) {
+      loudChunks = 0;
+      passThrough = false;        // half-duplex: the agent finishes, then the claimant talks
+    } else if (agentSpeaking) {
       loudChunks = rms >= BARGE_RMS ? loudChunks + 1 : 0;
       passThrough = loudChunks >= BARGE_HOLD_CHUNKS;
     } else {
@@ -469,6 +528,7 @@ function wireMic(stream) {
     }
     const pcm16 = passThrough ? resampleToPcm16(samples, audioContext.sampleRate, 16000) : silencePcm16(samples.length, audioContext.sampleRate, 16000);
     liveSocket.send(JSON.stringify({ type: "audio", data: arrayBufferToBase64(pcm16.buffer) }));
+    reportActivity(passThrough && rms >= BARGE_RMS * 0.5);
   };
   inputSource.connect(inputProcessor);
   inputProcessor.connect(audioContext.destination);
@@ -517,6 +577,12 @@ function stopLiveVoice(closeSocket = true) {
 }
 
 /* ---------- camera ---------- */
+function setLighting(dark, issue) {
+  const tag = cameraStage.querySelector(".camera-tag");
+  tag.classList.toggle("dark", Boolean(dark));
+  const hint = issue ? issue.replace(/^too dark:\s*/i, "Too dark. ") : "Too dark. Add light or use the flashlight";
+  tag.innerHTML = dark ? `<span class="rec-dot"></span> ${escapeHtml(hint)}` : '<span class="rec-dot"></span> Agent can see this';
+}
 async function startCamera() {
   if (cameraPending || cameraStream) return;
   const epoch = generation;
@@ -559,6 +625,7 @@ function stopCamera() {
   cameraStream = null;
   cameraPreview.srcObject = null;
   cameraStage.hidden = true;
+  setLighting(false);
   cameraButton.classList.remove("on");
   cameraButton.querySelector(".ctl-label").textContent = "Camera";
   if (wasOn && liveSocket?.readyState === WebSocket.OPEN) {
@@ -606,17 +673,6 @@ function arrayBufferToBase64(buffer) {
   return btoa(binary);
 }
 
-/* ---------- forget ---------- */
-// Leaving a claim erases it on the server right away instead of waiting for the 30-minute expiry.
-function forgetSession() {
-  const id = sessionId || sessionStorage.getItem("claimSession");
-  disconnectLive();
-  sessionId = null;
-  sessionStorage.removeItem("claimSession");
-  setState(emptyState);
-  if (id) api(`/api/sessions/${id}`, { method: "DELETE" }).catch(() => {});
-}
-
 /* ---------- finish ---------- */
 function finishClaim() {
   const f = state.fields || {};
@@ -640,7 +696,10 @@ function finishClaim() {
 }
 
 /* ---------- wiring ---------- */
-micButton.addEventListener("click", () => (isRecording ? stopLiveVoice(false) : startLiveVoice()));
+micButton.addEventListener("click", () => {
+  if (isRecording) { stopLiveVoice(false); setStatus("Paused. Tap Talk to continue."); }
+  else startLiveVoice();
+});
 cameraButton.addEventListener("click", () => (cameraStream ? stopCamera() : startCamera()));
 keyboardButton.addEventListener("click", () => {
   textForm.hidden = !textForm.hidden;
