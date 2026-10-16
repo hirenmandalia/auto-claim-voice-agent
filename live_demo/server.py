@@ -98,6 +98,10 @@ if not logging.getLogger().handlers:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
 logger.setLevel(logging.INFO)
 FRAME_MAX_AGE_SECONDS = 12.0
+# Transcription placeholders for silence. Must never be shown or spoken, and never treated as a turn.
+SILENCE_PLACEHOLDER = re.compile(r"^\W*(no speech|no audio|silence|\(silence\)|\[silence\]|no response|\.\.\.)\W*$", re.IGNORECASE)
+# The agent asked the claimant to show something: the app should open the camera for them.
+CAMERA_ASK = re.compile(r"\b(show me|hold (it|that|the card|the form|them) up|point (the|your) camera|turn on (the|your) camera|on (the|your) camera|use (the|your) camera)\b", re.IGNORECASE)
 CLOSING_LINE = re.compile(r"packet is (now )?ready|review (it )?in the app|once you submit", re.IGNORECASE)
 # The agent must speak English; a transcript chunk in another script means the voice drifted (seen: Spanish, Devanagari).
 NON_LATIN = re.compile(r"[\u0400-\u04FF\u0590-\u05FF\u0600-\u06FF\u0900-\u0DFF\u0E00-\u0E7F\u3040-\u30FF\u3400-\u9FFF\uAC00-\uD7AF]")
@@ -1291,8 +1295,14 @@ async def live_voice(websocket: WebSocket) -> None:
         turn = pending[speaker]
         if not turn["text"].strip():
             return
+        if SILENCE_PLACEHOLDER.match(turn["text"]):
+            pending[speaker] = {"id": uuid.uuid4().hex, "text": ""}
+            return
         append_turn(session, speaker, turn["text"], turn["id"])
+        logger.info("%s: %s", speaker, turn["text"][:140])
         await send({"type": "transcript", "speaker": speaker, "text": turn["text"], "id": turn["id"], "final": True})
+        if speaker == "Agent" and CAMERA_ASK.search(turn["text"]) and not session.camera_enabled:
+            await send({"type": "camera_request"})
         pending[speaker] = {"id": uuid.uuid4().hex, "text": ""}
         if speaker == "Claimant":
             claimant_spoke()
@@ -1344,8 +1354,8 @@ async def live_voice(websocket: WebSocket) -> None:
                         result["closing_rule"] = (
                             "Every checklist item has now been covered. Your notes are being finalized and that takes up to "
                             "half a minute. In one short, warm sentence tell the claimant you're just finishing up your notes "
-                            "on their claim and it will take a moment, then stop and wait silently. Do not give the closing "
-                            "message yet; the app will prompt you when the packet is complete.")
+                            "on their claim and it will take a moment, then stop. Do not give the closing message in this turn, "
+                            "and do not mention the app, prompts, or being told anything.")
                 else:
                     result = {"status": "recording", "note": "Notes are being written in the background. Keep the conversation moving."}
                 urgent = bool(result.get("safety_escalation"))
@@ -1564,9 +1574,17 @@ async def live_voice(websocket: WebSocket) -> None:
                         for speaker, chunk in (("Claimant", content.input_transcription), ("Agent", content.output_transcription)):
                             if speaker == "Agent" and content.interrupted:
                                 continue
+                            if chunk and chunk.text and speaker == "Claimant" and SILENCE_PLACEHOLDER.match(pending["Claimant"]["text"] + chunk.text):
+                                continue  # silence transcribed as "No speech": not a claimant turn
                             if chunk and chunk.text:
                                 if speaker == "Agent":
                                     await finalize("Claimant")
+                                    if SILENCE_PLACEHOLDER.match(pending["Agent"]["text"] + chunk.text):
+                                        # "No speech." spoken aloud: cut it, drop it, and do NOT prompt again (that is what produced it).
+                                        logger.warning("Silence placeholder from agent dropped: %r", (pending["Agent"]["text"] + chunk.text)[:60])
+                                        await send({"type": "interrupted"})
+                                        pending["Agent"] = {"id": uuid.uuid4().hex, "text": ""}
+                                        continue
                                     drifted = len(NON_LATIN.findall(chunk.text)) >= 3
                                     if not drifted and NON_LATIN.search(chunk.text):
                                         chunk.text = NON_LATIN.sub("", chunk.text)  # drop stray glyphs from the on-screen transcript

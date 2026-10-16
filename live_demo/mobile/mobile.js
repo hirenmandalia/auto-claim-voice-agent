@@ -386,6 +386,7 @@ function connectLive() {
       else if (message.type === "state") applyServerState(message.state);
       else if (message.type === "interrupted") stopPlayback();
       else if (message.type === "lighting") setLighting(message.dark, message.issue);
+      else if (message.type === "camera_request") requestCamera();
       else if (message.type === "error") {
         processing = false;
         appendSystem(message.message);
@@ -577,6 +578,18 @@ function stopLiveVoice(closeSocket = true) {
 }
 
 /* ---------- camera ---------- */
+async function requestCamera() {
+  // The agent asked the claimant to show something. Try to open the camera; if the browser wants a tap
+  // (iOS Safari does), make the Camera button impossible to miss instead.
+  if (cameraStream || cameraPending) return;
+  try {
+    await startCamera();
+    if (!cameraStream) throw new Error("camera did not start");
+  } catch (_) {
+    cameraButton.classList.add("wanted");
+    cameraButton.querySelector(".ctl-label").textContent = "Tap to open";
+  }
+}
 function setLighting(dark, issue) {
   const tag = cameraStage.querySelector(".camera-tag");
   tag.classList.toggle("dark", Boolean(dark));
@@ -605,6 +618,7 @@ async function startCamera() {
     liveSocket.send(JSON.stringify({ type: "camera_state", enabled: true }));
     cameraPreview.srcObject = cameraStream;
     cameraStage.hidden = false;
+    cameraButton.classList.remove("wanted");
     cameraButton.classList.add("on");
     cameraButton.querySelector(".ctl-label").textContent = "Stop";
     frameTimer = window.setInterval(sendFrame, FRAME_INTERVAL_MS);
@@ -612,8 +626,9 @@ async function startCamera() {
     if (!isRecording) setStatus("Camera on", "live");
   } catch (error) {
     const denied = error.name === "NotAllowedError" || /denied|permission/i.test(error.message);
-    appendSystem(denied ? "Camera access was turned off. Allow it in Settings to show the damage." : `Camera failed: ${error.message}`);
+    if (denied) appendSystem("Camera access was turned off. Allow it in Settings to show the damage.");
     stopCamera();
+    throw error;
   } finally { cameraPending = false; }
 }
 
@@ -700,7 +715,7 @@ micButton.addEventListener("click", () => {
   if (isRecording) { stopLiveVoice(false); setStatus("Paused. Tap Talk to continue."); }
   else startLiveVoice();
 });
-cameraButton.addEventListener("click", () => (cameraStream ? stopCamera() : startCamera()));
+cameraButton.addEventListener("click", () => (cameraStream ? stopCamera() : startCamera().catch(() => {})));
 keyboardButton.addEventListener("click", () => {
   textForm.hidden = !textForm.hidden;
   keyboardButton.classList.toggle("on", !textForm.hidden);

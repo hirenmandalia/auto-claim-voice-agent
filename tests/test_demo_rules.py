@@ -186,6 +186,16 @@ class ServerHelpers(unittest.TestCase):
         for t in good[:2]:
             self.assertFalse(server.META_TALK.search(t), t)
 
+    def test_silence_placeholders_and_camera_asks(self):
+        """Incidents: the agent said 'No speech' aloud; 'you can provide that in the app' instead of opening the camera."""
+        for t in ("No speech.", " no speech ", "No response", "[silence]"):
+            self.assertTrue(server.SILENCE_PLACEHOLDER.match(t), t)
+        self.assertFalse(server.SILENCE_PLACEHOLDER.match("I can see the dent on the door."))
+        for t in ("Could you show me the other driver's insurance card?", "Please turn on your camera", "Hold the form up to the camera"):
+            self.assertTrue(server.CAMERA_ASK.search(t), t)
+        self.assertFalse(server.CAMERA_ASK.search("Do you have a police report?"))
+        self.assertIn("Never say they can provide it later", live_tools.SYSTEM_INSTRUCTION)
+
     def test_app_context_is_sanitized_and_used(self):
         ctx = server._clean_app_context({"policyholder_name": "Jordan <b>Lee</b>", "policy_number": "AUTO-90210", "bogus": "x", "vehicle": "2013 Toyota Sienna"})
         self.assertEqual(set(ctx), {"policyholder_name", "policy_number", "vehicle"})

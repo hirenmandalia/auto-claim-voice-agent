@@ -220,6 +220,28 @@ async def scenario_dark_camera(c, f):
     await c.send(type="camera_state", enabled=False)
 
 
+async def scenario_collects_other_driver_on_camera(c, f):
+    """Claimant HAS the other driver's details: the agent asks to see them on camera (and the app gets a camera_request),
+    never defers them to 'the app' or 'later'."""
+    await c.wait_agent_turn(12)
+    await c.say("Yes, all safe. Another car hit me from behind at a red light on Coleman Ave in San Jose this morning. Email is best.")
+    c.consumed = len(c.agent_turns)
+    for _ in range(4):
+        reply = await c.next_agent_turn(25)
+        if reply is None: break
+        if re.search(r"other driver|other party|their (details|information|insurance)|exchange", reply, re.I):
+            await c.say("Yes, I have the other driver's insurance card and their license plate right here."); break
+        if "?" in reply: await c.say("No, not right now.")
+    else:
+        return f.append("agent never asked about the other driver")
+    c.consumed = len(c.agent_turns)
+    got_ask = await c.wait_for(lambda: any(re.search(r"camera|show me|hold (it|the card) up", t["text"], re.I) for t in c.agent_turns[c.consumed:]), 25, "camera ask")
+    if not got_ask: return f.append(f"did not ask to see the details on camera; said: {c.agent_turns[-1]['text'] if c.agent_turns else None!r}")
+    if not await c.wait_for(lambda: any(e["type"] == "camera_request" for e in c.events), 5, "camera_request"): f.append("no camera_request event sent to the phone")
+    bad = next((t["text"] for t in c.agent_turns if re.search(r"\b(in the app|later|to the adjuster)\b", t["text"], re.I) and re.search(r"provide|upload|add|submit", t["text"], re.I)), None)
+    if bad: f.append(f"deferred the details instead of collecting them: {bad!r}")
+
+
 SCENARIOS = {
     "greeting": scenario_greeting,
     "latency_single_reply": scenario_latency_and_single_reply,
@@ -227,6 +249,7 @@ SCENARIOS = {
     "quiet_reask": scenario_quiet_reask,
     "voice_cancels_reask": scenario_voice_cancels_reask,
     "dark_camera": scenario_dark_camera,
+    "collects_other_driver_on_camera": scenario_collects_other_driver_on_camera,
 }
 
 
