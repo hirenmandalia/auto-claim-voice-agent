@@ -1,0 +1,297 @@
+<title>Claim Agent Rulebook</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a fixed left index on wide screens, a single column on phones; each rule is a compact card with an enforcement chip. */
+:root{
+  --bg:#f6f5f1; --surface:#ffffff; --ink:#1d2130; --muted:#5f667a; --line:#e2e0d8; --accent:#1f5f8b; --accent-soft:#e3eef6;
+  --code:#2b6cb0; --crit:#b42318; --crit-soft:#fde8e6; --warn:#8a5a00; --warn-soft:#fff3cc; --ok:#146c43; --ok-soft:#e1f3e8; --prompt:#5b3fa6; --prompt-soft:#ede7fb;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif; --body:"IBM Plex Sans", -apple-system, "Segoe UI", sans-serif; --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#15171d; --surface:#1d2027; --ink:#e8e9ee; --muted:#a3a8b8; --line:#2f333d; --accent:#7fb3dc; --accent-soft:#1f3140; --code:#8fc1ec; --crit:#f08b82; --crit-soft:#3a1f1d; --warn:#f0c66a; --warn-soft:#3a2f14; --ok:#7fd4a1; --ok-soft:#173326; --prompt:#c4b1f5; --prompt-soft:#2b2440; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#15171d; --surface:#1d2027; --ink:#e8e9ee; --muted:#a3a8b8; --line:#2f333d; --accent:#7fb3dc; --accent-soft:#1f3140; --code:#8fc1ec; --crit:#f08b82; --crit-soft:#3a1f1d; --warn:#f0c66a; --warn-soft:#3a2f14; --ok:#7fd4a1; --ok-soft:#173326; --prompt:#c4b1f5; --prompt-soft:#2b2440; color-scheme:dark }
+*{box-sizing:border-box} body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.55;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:28px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(28px,4vw,40px);line-height:1.15;margin:6px 0 10px;text-wrap:balance}
+.lede{max-width:66ch;color:var(--muted);font-size:16px;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-size:13px;color:var(--muted)} .meta code{font-family:var(--mono);font-size:12px;color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;letter-spacing:.02em;padding:3px 9px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
+.chip.code{background:var(--accent-soft);color:var(--accent)} .chip.prompt{background:var(--prompt-soft);color:var(--prompt)} .chip.eval{background:var(--ok-soft);color:var(--ok)} .chip.manual{background:var(--warn-soft);color:var(--warn)}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px}
+nav.index{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;padding-top:4px}
+nav.index ol{list-style:none;margin:0;padding:0;display:grid;gap:4px} nav.index a{color:var(--muted);text-decoration:none;font-size:13.5px;display:block;padding:5px 10px;border-left:2px solid var(--line)} nav.index a:hover,nav.index a:focus-visible{color:var(--ink);border-color:var(--accent);outline:none}
+nav.index .sub{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px 10px;font-weight:600}
+main{min-width:0}
+section{margin-bottom:44px;scroll-margin-top:16px}
+h2{font-family:var(--display);font-weight:600;font-size:24px;margin:0 0 6px;text-wrap:balance} .why{color:var(--muted);max-width:66ch;margin:0 0 16px;font-size:15px}
+.rules{display:grid;gap:12px}
+.rule{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:8px}
+.rule h3{margin:0;font-size:16px;font-weight:600;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between} .rule h3 span.t{flex:1 1 auto;min-width:0}
+.rule p{margin:0;font-size:14.5px;max-width:72ch} .rule .how{font-size:13px;color:var(--muted)} .rule .how b{color:var(--ink);font-weight:600}
+.rule code,.tbl code{font-family:var(--mono);font-size:12.5px;color:var(--code);background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+.thresholds{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:4px}
+.kv{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg)} .kv b{display:block;font-family:var(--mono);font-size:15px;font-weight:500;font-variant-numeric:tabular-nums} .kv span{font-size:12px;color:var(--muted)}
+.said{font-family:var(--display);font-size:15px;border-left:3px solid var(--accent);padding:4px 12px;color:var(--ink);margin:2px 0}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)} table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px} th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top} th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600} tr:last-child td{border-bottom:none}
+.phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.phase{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px} .phase .n{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:500} .phase h3{margin:4px 0 6px;font-size:16px} .phase p{margin:0;font-size:14px;color:var(--muted)} .phase ul{margin:8px 0 0;padding-left:18px;font-size:14px}
+.note{background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:10px 14px;font-size:14px}
+.check{display:grid;gap:6px;font-size:14.5px} .check label{display:flex;gap:10px;align-items:flex-start} .check input{margin-top:4px}
+footer{border-top:1px solid var(--line);margin-top:40px;padding-top:14px;font-size:13px;color:var(--muted)}
+@media (max-width:860px){ .layout{grid-template-columns:1fr} nav.index{position:static;border-bottom:1px solid var(--line);padding-bottom:14px} nav.index ol{display:flex;flex-wrap:wrap;gap:4px} nav.index a{border-left:none;border:1px solid var(--line);border-radius:999px;padding:4px 10px} nav.index .sub{display:none} }
+@media (prefers-reduced-motion:no-preference){ html{scroll-behavior:smooth} }
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Auto claim voice agent</div>
+  <h1>Rulebook: guardrails, policies, and how each one is checked</h1>
+  <p class="lede">Every rule the voice agent is held to during a first-notice-of-loss call, where it is enforced, and which automated test proves it still holds. Written for anyone evaluating the demo, not only the people who built it.</p>
+  <div class="meta"><span>Agent model: <code>gemini-3.8-live</code> (voice)</span><span>Notes and vision: <code>gemini-3.8-flash</code></span><span>Server: <code>live_demo/server.py</code></span><span>Prompt: <code>live_demo/live_tools.py</code></span><span>Rules: <code>policies.py</code></span></div>
+  <div class="legend">
+    <span class="chip code">Code: deterministic, cannot be talked around</span>
+    <span class="chip prompt">Prompt: instruction to the model</span>
+    <span class="chip eval">Eval: automated test proves it</span>
+    <span class="chip manual">Manual: needs a real phone</span>
+  </div>
+</header>
+
+<div class="layout">
+<nav class="index" aria-label="Sections">
+  <ol>
+    <li><div class="sub">Rules</div></li>
+    <li><a href="#scope">1. Scope and identity</a></li>
+    <li><a href="#conduct">2. How the agent speaks</a></li>
+    <li><a href="#turns">3. Turn-taking</a></li>
+    <li><a href="#order">4. Call order and closing</a></li>
+    <li><a href="#safety">5. Safety and routing</a></li>
+    <li><a href="#camera">6. Camera and evidence</a></li>
+    <li><a href="#data">7. Data handling</a></li>
+    <li><div class="sub">Verification</div></li>
+    <li><a href="#evals">8. Evaluation framework</a></li>
+    <li><a href="#incidents">9. Incident map</a></li>
+    <li><a href="#manual">10. Phone checklist</a></li>
+    <li><a href="#config">11. Settings</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="scope">
+  <h2>1. Scope and identity</h2>
+  <p class="why">What the agent is allowed to talk about, and what it already knows about the caller before the first word.</p>
+  <div class="rules">
+    <div class="rule"><h3><span class="t">Auto claims only</span><span><span class="chip prompt">Prompt</span> <span class="chip code">Code</span> <span class="chip eval">Eval</span></span></h3>
+      <p>Collisions, hit-and-run, theft of or from the vehicle, vandalism, glass, weather, fire, animal strikes, and towing or rental caused by one of those. A home, health, travel, life, or pet loss is declined kindly with a pointer to the right insurer, and no facts are collected for it. The agent is not a general assistant: it declines shopping, repair advice, quotes, legal or medical questions, jokes, and chat, and steers back to the claim.</p>
+      <div class="how"><b>Enforced:</b> the SCOPE block of the system prompt, plus a deterministic backstop. If the classifier still sees a non-auto loss, <code>apply_scope_gate</code> forces the route to <code>out_of_scope</code> and the app hides Review &amp; submit. Emergencies keep priority. <code>FNOL_AUTO_ONLY=off</code> restores the multi-line demo. Tested in <code>tests/test_scope_gate.py</code>.</div></div>
+    <div class="rule"><h3><span class="t">The caller is already known</span><span><span class="chip code">Code</span> <span class="chip prompt">Prompt</span> <span class="chip eval">Eval</span></span></h3>
+      <p>The app passes the signed-in policyholder's name, policy number, and vehicle when the claim starts. The agent greets by first name, never asks for the name or policy number, and looks the policy up in the background on its own. Contact is a single preference question, phone or email, because both are on file.</p>
+      <div class="how"><b>Enforced:</b> <code>app_context</code> is sanitized to four allowed keys and injected as app state before the first turn; the extractor is told a stated preference is a complete contact answer, and the validator drops any "specific email address" style gap. Live eval <code>common_checks</code> fails any transcript where the agent asks for a name or policy number.</div></div>
+    <div class="rule"><h3><span class="t">English, and only English</span><span><span class="chip code">Code</span> <span class="chip eval">Eval</span></span></h3>
+      <p>The spoken voice and both on-screen transcripts are pinned to English. If the voice still drifts, the line is cut mid-sentence on the phone, dropped from the transcript, and the agent is steered back in English. A single stray foreign glyph from the transcriber is stripped silently; three or more characters count as drift.</p>
+      <div class="how"><b>Enforced:</b> <code>language_code</code> and <code>language_codes</code> in the live config; the <code>NON_LATIN</code> guard in the transcript stream. Observed before the fix: a mid-call switch to Spanish, and a Devanagari transcript. Rules test <code>test_language_pinned_for_speech_and_both_transcripts</code>.</div></div>
+  </div>
+</section>
+
+<section id="conduct">
+  <h2>2. How the agent speaks</h2>
+  <p class="why">Rules about the shape of each reply. Most of these came directly from phone tests where the agent repeated itself or narrated its own machinery.</p>
+  <div class="rules">
+    <div class="rule"><h3><span class="t">Speaks first, by name</span><span><span class="chip code">Code</span> <span class="chip eval">Eval</span></span></h3>
+      <p>When the claim screen connects, the agent greets the caller by first name and asks whether everyone is safe. Nothing is pre-written; the greeting is generated and spoken.</p>
+      <div class="how"><b>Enforced:</b> the server sends a greeting cue the moment the live session is ready for a fresh in-app claim. Live eval <code>greeting</code>: spoken within 12 s, contains the first name and a safety question, no second unprompted line within 6 s.</div></div>
+    <div class="rule"><h3><span class="t">Replies right away; note-taking never blocks speech</span><span><span class="chip code">Code</span> <span class="chip prompt">Prompt</span> <span class="chip eval">Eval</span></span></h3>
+      <p>The agent acknowledges what you said in the same turn it files notes. The claim-notes pipeline runs in the background and the screen refreshes when it lands.</p>
+      <div class="how"><b>Enforced:</b> the <code>sync_claim_packet</code> tool returns instantly with the last finished notes and a "may lag one turn" note; the pipeline is kicked off with <code>request_update()</code>. Before this, the agent waited 20 to 30 s per turn. Live eval <code>latency_single_reply</code>: first words within 4 s (typically about 1 s).</div></div>
+    <div class="rule"><h3><span class="t">One reply per thing you say</span><span><span class="chip code">Code</span> <span class="chip eval">Eval</span></span></h3>
+      <p>Background results never make the agent speak a second time. If the agent handled a turn with tool calls only and said nothing, the server prompts one reply after 1.2 s so it cannot go mute.</p>
+      <div class="how"><b>Enforced:</b> packet-sync results use <code>SILENT</code> scheduling; <code>nudge_if_silent</code> covers the mute case. Policy lookup and photo pins stay <code>WHEN_IDLE</code> so a tool-first turn can still continue into speech. Rules test <code>test_packet_sync_is_silent_other_tools_continue</code>; live eval counts replies per turn.</div></div>
+    <div class="rule"><h3><span class="t">Never narrates its own machinery</span><span><span class="chip code">Code</span> <span class="chip prompt">Prompt</span> <span class="chip eval">Eval</span></span></h3>
+      <p>No mention of models, prompts, notices, app events, tools, processing, or waiting for a response. If nothing new has happened, it says nothing. Silence is always preferred to narration.</p>
+      <div class="how"><b>Enforced:</b> a hard rule in the prompt, and the <code>META_TALK</code> guard on the transcript stream: a matching line cuts the phone's audio within a fraction of a second, is dropped from the transcript, and the agent is steered back once per 20 s. Ordinary insurance phrasing such as "processing your claim" is allowed. Observed before the fix: "To give the model enough time to respond to your most recent prompt, please wait patiently." Rules test <code>test_meta_talk_guard</code>; live <code>common_checks</code> scans every transcript.</div></div>
+    <div class="rule"><h3><span class="t">Never restates, never re-asks</span><span><span class="chip prompt">Prompt</span> <span class="chip code">Code</span> <span class="chip eval">Eval</span></span></h3>
+      <p>Each time it speaks it says something new. Every notes result hands it an explicit list of what is already known: date, location, what happened, contact preference, name, policy. To confirm one, it states the fact and asks "is that right?" rather than asking fresh.</p>
+      <div class="how"><b>Enforced:</b> <code>already_known_do_not_ask_again</code> in every <code>sync_claim_packet</code> result. Rules test <code>test_already_known_list_is_populated</code>; live eval flags "when did it happen" after the date was given.</div></div>
+    <div class="rule"><h3><span class="t">Asks only for checklist items</span><span><span class="chip prompt">Prompt</span> <span class="chip eval">Eval</span></span></h3>
+      <p>No repair estimates, receipts, medical records, mileage, or anything not on the checklist. If you answered an item before being asked, it is not asked.</p>
+      <div class="how"><b>Enforced:</b> prompt rule; live eval <code>full_call_closes</code> fails on any off-checklist request.</div></div>
+    <div class="rule"><h3><span class="t">Never promises coverage</span><span><span class="chip prompt">Prompt</span></span></h3>
+      <p>Policy details describe what is on the policy, not what will be paid. No promises of coverage, payment, liability, benefits, or approval.</p>
+      <div class="how"><b>Enforced:</b> prompt rule from the original demo, kept verbatim.</div></div>
+  </div>
+</section>
+
+<section id="turns">
+  <h2>3. Turn-taking</h2>
+  <p class="why">Who speaks when. This is where most of the phone-test failures lived: re-asking over the caller's answer, interrupting on room noise, and prompting the model while it was mid-sentence.</p>
+  <div class="rules">
+    <div class="rule"><h3><span class="t">Voice detection is deliberately insensitive</span><span><span class="chip code">Code</span> <span class="chip eval">Eval</span></span></h3>
+      <p>The live model is told to require clear speech before it decides you started talking, and to wait a beat before it decides you stopped.</p>
+      <div class="thresholds"><div class="kv"><b>LOW</b><span>start-of-speech sensitivity</span></div><div class="kv"><b>LOW</b><span>end-of-speech sensitivity</span></div><div class="kv"><b>300 ms</b><span>audio kept before speech start</span></div><div class="kv"><b>900 ms</b><span>silence that ends your turn</span></div></div>
+      <div class="how"><b>Enforced:</b> <code>_realtime_input_config</code>; <code>FNOL_VAD_SILENCE_MS</code> adjusts the pause. Rules test <code>test_voice_detection_is_low_sensitivity</code>.</div></div>
+    <div class="rule"><h3><span class="t">You can interrupt; the room cannot</span><span><span class="chip code">Code</span> <span class="chip manual">Manual</span></span></h3>
+      <p>Barge-in is on: talk over the agent and it stops and listens. While the agent is speaking, the phone passes only loud, sustained speech through; everything quieter is sent as silence so the audio stream stays continuous. The mic also stays muted for a short tail after the agent stops, because speaker echo trails the audio.</p>
+      <div class="thresholds"><div class="kv"><b>0.08 RMS</b><span>loudness to count as interruption</span></div><div class="kv"><b>430 ms</b><span>sustained before it passes</span></div><div class="kv"><b>700 ms</b><span>echo tail after playback</span></div><div class="kv"><b>0.006 RMS</b><span>noise floor when agent is quiet</span></div></div>
+      <div class="how"><b>Enforced:</b> echo cancellation and noise suppression on the mic; the gate in <code>mobile.js</code>; <code>FNOL_BARGE_IN=off</code> makes the agent finish every sentence. Echo behaviour can only be verified on a real phone speaker.</div></div>
+    <div class="rule"><h3><span class="t">The model is never prompted mid-sentence</span><span><span class="chip code">Code</span></span></h3>
+      <p>Every app-side prompt to the model (a re-ask, a lighting notice, the closing cue) waits until the model has finished generating and the phone has finished playing. The phone reports both playback start and end to the server.</p>
+      <div class="how"><b>Enforced:</b> <code>wait_until_idle()</code> in front of every prompt. A prompt that lands mid-response is what produced the "please wait for the model" line.</div></div>
+    <div class="rule"><h3><span class="t">Silence gets one gentle re-ask, and your voice cancels it</span><span><span class="chip code">Code</span> <span class="chip prompt">Prompt</span> <span class="chip eval">Eval</span></span></h3>
+      <p>After the agent asks a question, the clock starts when its audio finishes playing. If the phone hears nothing from you for ten seconds, the agent checks in once, warmly, in different words, with no new topic. If you stay silent after that, it waits. If you make any sound in the window, the re-ask is cancelled before it is sent. If the agent's reply had no question at all, the same ten seconds produce the next checklist question instead, so the call cannot stall.</p>
+      <div class="said">"Take your time, there's no rush. I just want to make sure you're safe right now."</div>
+      <div class="how"><b>Enforced:</b> <code>follow_up_if_quiet</code>, driven by the phone's <code>playback</code> and <code>activity</code> messages; one check per claimant turn, never a third ask. Live evals <code>quiet_reask</code> (fires at 10 s or later, rephrased, no third ask) and <code>voice_cancels_reask</code>.</div></div>
+  </div>
+</section>
+
+<section id="order">
+  <h2>4. Call order and closing</h2>
+  <p class="why">The call has three phases in a fixed order, and the closing line is gated by code, not by the model's judgement.</p>
+  <div class="phases">
+    <div class="phase"><div class="n">Phase 1</div><h3>Core facts</h3><p>Six fields. Name and policy come from the app.</p><ul><li>What happened</li><li>When</li><li>Where</li><li>Injuries</li><li>Phone or email</li></ul></div>
+    <div class="phase"><div class="n">Phase 2</div><h3>Checklist</h3><p>One item per turn, each asked once. "I don't have it" is a complete answer.</p><ul><li>Photos of the damage (offers the camera)</li><li>Police report or exchange form</li><li>Other driver and witness details</li></ul></div>
+    <div class="phase"><div class="n">Phase 3</div><h3>Closing</h3><p>Only when the server says <code>closing_allowed</code>. Nothing is asked after it.</p><ul><li>Short summary</li><li>The closing line</li><li>Review &amp; submit appears</li></ul></div>
+  </div>
+  <div class="rules" style="margin-top:12px">
+    <div class="rule"><h3><span class="t">Closing is gated on core facts, and every checklist item being covered</span><span><span class="chip code">Code</span> <span class="chip eval">Eval</span></span></h3>
+      <p>A checklist item counts as covered once either side has mentioned it, so volunteering "no police report" before being asked is enough. Documents and third-party details can never block the close; only a missing core fact can. The claim does not close early, and it cannot get stuck.</p>
+      <div class="said">"Your claim packet is ready. You can review it in the app, and once you submit it, an adjuster will get started on it."</div>
+      <div class="how"><b>Enforced:</b> <code>closing_allowed</code> in <code>summarize_workflow_for_voice</code>, computed from the six core fields and transcript keywords; the validator drops document-type items from blocking facts. Observed before the fix: a closing followed by "do you have a repair estimate?", and a call that never closed because "other driver's insurance details" stayed listed as missing. Rules tests in <code>ClosingGate</code>; pipeline fixture <code>other_driver_fled_closes</code>; live eval <code>full_call_closes</code>.</div></div>
+    <div class="rule"><h3><span class="t">The app flips to "closed" the moment the line is spoken</span><span><span class="chip code">Code</span> <span class="chip eval">Eval</span></span></h3>
+      <p>Review &amp; submit appears as soon as the closing line is said, without waiting for another notes cycle.</p>
+      <div class="how"><b>Enforced:</b> the server pushes state when an agent turn matches the closing phrasing. Found by the first run of the eval suite. Live eval checks <code>state.closed</code>.</div></div>
+    <div class="rule"><h3><span class="t">A natural beat while the notes finish</span><span><span class="chip prompt">Prompt</span> <span class="chip code">Code</span></span></h3>
+      <p>When the last item is covered but the notes are still being finalized, the agent says it is finishing up its notes and goes quiet; the phone plays soft keystrokes and shows "taking notes". The closing follows when the notes land. The re-ask is held during this window.</p>
+      <div class="how"><b>Enforced:</b> <code>all_items_covered</code> in the sync result; the keystroke cue in <code>mobile.js</code>.</div></div>
+  </div>
+</section>
+
+<section id="safety">
+  <h2>5. Safety and routing</h2>
+  <div class="rules">
+    <div class="rule"><h3><span class="t">Safety first, every time</span><span><span class="chip prompt">Prompt</span></span></h3>
+      <p>If anyone may be hurt or in danger the agent gives emergency guidance regardless of topic, says a human representative should review, and escalates the packet. "No one is hurt" is a negative fact, not an emergency.</p></div>
+    <div class="rule"><h3><span class="t">Only a confirmed injury or hazard escalates</span><span><span class="chip code">Code</span> <span class="chip eval">Eval</span></span></h3>
+      <p>An injury the caller has not answered about yet is noted for the adjuster, not escalated. Before this rule, "Escalated to a person" flashed on ordinary fender-benders in the seconds before the caller answered the opening safety question.</p>
+      <div class="how"><b>Enforced:</b> <code>policies.py</code> rule SAFE-001 fires on status <code>present</code> only; <code>uncertain</code> raises the non-escalating SAFE-002. Pipeline fixtures <code>injury_unanswered_no_escalation</code> and <code>real_injury_escalates</code>; rules tests in <code>EscalationRules</code>.</div></div>
+    <div class="rule"><h3><span class="t">Routes the app can show</span><span><span class="chip code">Code</span></span></h3>
+      <div class="tbl"><table><tr><th>Route</th><th>Shown as</th><th>Meaning</th></tr>
+      <tr><td><code>needs_docs</code></td><td>In progress</td><td>Core facts or documents still open</td></tr>
+      <tr><td><code>policy_review</code></td><td>Policy review</td><td>Normal path for a complete auto claim; an adjuster reviews coverage</td></tr>
+      <tr><td><code>special_investigation</code></td><td>Under review</td><td>Fraud or timing signals fired</td></tr>
+      <tr><td><code>emergency_escalation</code></td><td>Escalated to a person</td><td>Present injury or hazard</td></tr>
+      <tr><td><code>out_of_scope</code></td><td>Auto claims only</td><td>Not an auto loss; Review &amp; submit hidden</td></tr></table></div></div>
+  </div>
+</section>
+
+<section id="camera">
+  <h2>6. Camera and evidence</h2>
+  <p class="why">The camera streams one frame per second while on. The agent's eyes are the adjuster's eyes, so what it claims to see is checked independently.</p>
+  <div class="rules">
+    <div class="rule"><h3><span class="t">Every distinct view is pinned</span><span><span class="chip prompt">Prompt</span></span></h3>
+      <p>A new angle, a close-up, a different part of the vehicle, or a photo held up to the camera each count as new. The agent keeps pinning until you are done showing things, and never re-pins an unchanged view. Photos shown on a screen or on paper are accepted as evidence; the agent judges the picture, not the screen.</p></div>
+    <div class="rule"><h3><span class="t">Captions are independent, and "confirmed" is earned</span><span><span class="chip code">Code</span></span></h3>
+      <p>Each pinned frame is captioned by a separate vision call that is told to ignore any instructions inside the image and to describe only what is visible. A photo is marked Confirmed only when that caption supports what you said. Only the server can mark evidence as received; the language model cannot.</p></div>
+    <div class="rule"><h3><span class="t">Poor lighting is detected three ways and prompted once</span><span><span class="chip code">Code</span> <span class="chip eval">Eval</span></span></h3>
+      <p>Phone cameras boost gain in the dark, so a dark room reads as murky grey rather than black. The server flags a frame as too dark on any of three signals, turns the phone's overlay amber with the fix, and asks the agent to request light. A dark pin is kept as a placeholder, tagged "Too dark, retake", never confirmed.</p>
+      <div class="thresholds"><div class="kv"><b>&lt; 60</b><span>mean luminance (0 to 255)</span></div><div class="kv"><b>&lt; 10 %</b><span>pixels reasonably lit</span></div><div class="kv"><b>&gt; 55 %</b><span>pixels in deep shadow</span></div><div class="kv"><b>3 frames</b><span>in a row before the prompt</span></div><div class="kv"><b>12 s</b><span>vision usability check interval</span></div><div class="kv"><b>45 s</b><span>cooldown between prompts</span></div></div>
+      <div class="how"><b>Enforced:</b> <code>frame_is_dark</code> on every frame, <code>camera_quality_watch</code> while the camera is on, and a lighting judgement on every pin. Rules test <code>test_dark_frames_detected_bright_frames_pass</code>; live eval <code>dark_camera</code>.</div></div>
+    <div class="rule"><h3><span class="t">No sketches</span><span><span class="chip code">Code</span> <span class="chip eval">Eval</span></span></h3>
+      <p>The incident-sketch tool is not offered to the model, and the prompt says sketching is unavailable. <code>FNOL_SKETCH=on</code> brings it back.</p></div>
+  </div>
+</section>
+
+<section id="data">
+  <h2>7. Data handling</h2>
+  <div class="rules">
+    <div class="rule"><h3><span class="t">Memory only, thirty minutes</span><span><span class="chip code">Code</span></span></h3>
+      <p>A claim lives in the server's memory and is forgotten after 30 minutes without activity. Nothing is written to disk unless you download the packet. A live connection ends after 20 minutes and can be resumed.</p></div>
+    <div class="rule"><h3><span class="t">Reachable only on the local network</span><span><span class="chip code">Code</span> <span class="chip eval">Eval</span></span></h3>
+      <p>The server refuses any client that is not on a private network address, and only when <code>FNOL_ALLOW_LAN=1</code> is set. The phone connects over HTTPS with a certificate issued for the Mac's Wi-Fi address.</p>
+      <div class="how"><b>Enforced:</b> <code>client_ok</code> and <code>local_host</code>; rules test <code>test_lan_mode_accepts_private_addresses_only_when_enabled</code>.</div></div>
+    <div class="rule"><h3><span class="t">What leaves the Mac</span><span><span class="chip code">Code</span></span></h3>
+      <p>Your audio, camera frames, and the transcript go to Google's Gemini API and nowhere else. The policy lookup is a local mock directory. The demo files nothing with any insurer.</p></div>
+  </div>
+</section>
+
+<section id="evals">
+  <h2>8. Evaluation framework</h2>
+  <p class="why">Three layers, cheapest first. <code>./run_evals.sh</code> runs all three and fails the release on any red. Reports are written as JSON with every agent line, so a failure can be read without re-running.</p>
+  <div class="tbl"><table>
+    <tr><th>Layer</th><th>Runs against</th><th>Time</th><th>What it proves</th></tr>
+    <tr><td><b>Rules</b><br><code>tests/test_demo_rules.py</code></td><td>Nothing; pure code</td><td>under 1 s</td><td>Escalation logic, checklist filtering, contact preference, closing gate, already-known list, language pin, tool scheduling, sketch off, barge-in default, darkness metric, meta-talk guard, LAN access, account context. 80 tests with the original demo's suites.</td></tr>
+    <tr><td><b>Notes pipeline</b><br><code>evals/run_pipeline_evals.py</code></td><td>The real extractor (Gemini Flash)</td><td>about 1 min</td><td>Seven transcript fixtures: route, missing facts, contact and date capture, whether the claim can close. Each fixture names the incident it guards.</td></tr>
+    <tr><td><b>Live conversation</b><br><code>evals/run_live_evals.py</code></td><td>The real server and Gemini Live over the WebSocket, driven by a scripted claimant</td><td>about 6 min</td><td>Six scenarios, below. <code>--judge</code> adds a Gemini-scored tone rubric: warmth, conciseness, no repetition, natural flow.</td></tr>
+  </table></div>
+  <div class="tbl" style="margin-top:12px"><table>
+    <tr><th>Live scenario</th><th>Pass criteria</th></tr>
+    <tr><td><code>greeting</code></td><td>Spoken within 12 s, uses the first name, asks about safety, no second unprompted line within 6 s</td></tr>
+    <tr><td><code>latency_single_reply</code></td><td>First words within 4 s of the claimant's turn; one reply per turn; the date is not re-asked</td></tr>
+    <tr><td><code>full_call_closes</code></td><td>Answers whatever the agent asks; no off-checklist requests; the closing line arrives; <code>state.closed</code> is true; nothing is asked after the close</td></tr>
+    <tr><td><code>quiet_reask</code></td><td>After a first-reply question and silence: exactly one re-ask, at 10 s or later, in different words, then nothing more</td></tr>
+    <tr><td><code>voice_cancels_reask</code></td><td>Mic activity inside the window cancels the re-ask; the agent answers the claimant's words instead</td></tr>
+    <tr><td><code>dark_camera</code></td><td>Four dark frames produce the lighting event and a spoken request for light; bright frames clear it</td></tr>
+    <tr><td>every scenario</td><td>No mention of models, prompts, or "demo"; no request for name or policy number; no non-Latin script</td></tr>
+  </table></div>
+  <div class="note" style="margin-top:12px">Gemini Live is not deterministic. A single red live scenario is worth one re-run with <code>--only &lt;name&gt;</code> before it is treated as a regression. The rules and pipeline layers are stable.</div>
+</section>
+
+<section id="incidents">
+  <h2>9. Incident map</h2>
+  <p class="why">Every behaviour seen on the phone during testing, and the test that now guards it.</p>
+  <div class="tbl"><table>
+    <tr><th>Seen on the phone</th><th>Root cause</th><th>Guarded by</th></tr>
+    <tr><td>Re-asked the same question a moment later</td><td>Every tool result made the model speak again</td><td>rules: packet sync is SILENT; live: one reply per turn</td></tr>
+    <tr><td>Re-asked over the caller's answer; said "wait patiently for the model"</td><td>Silence timer ran from text, not audio; prompts sent mid-response</td><td>live: <code>voice_cancels_reask</code>, <code>quiet_reask</code>; rules: meta-talk guard</td></tr>
+    <tr><td>Switched to Spanish; Devanagari on screen</td><td>Language not pinned for speech or transcripts</td><td>rules: language pin; live: script scan</td></tr>
+    <tr><td>Closed, then asked for a repair estimate</td><td>Closing not gated; follow-up fired after the closing</td><td>live: <code>full_call_closes</code>; rules: <code>ClosingGate</code></td></tr>
+    <tr><td>Never closed; no Review &amp; submit</td><td>"Other driver's details" listed as a missing fact</td><td>pipeline: <code>other_driver_fled_closes</code>; live: <code>state.closed</code></td></tr>
+    <tr><td>Asked for a specific email after "email is fine"</td><td>Extractor demanded the address</td><td>pipeline: <code>contact_preference_only</code></td></tr>
+    <tr><td>Asked for the policy number and the date again</td><td>No "already known" list each turn</td><td>rules: already-known list; live: policy and date scans</td></tr>
+    <tr><td>"Escalated to a person" on a fender-bender</td><td>Uncertain injury status escalated</td><td>pipeline: injury fixtures; rules: <code>EscalationRules</code></td></tr>
+    <tr><td>Dark photo not flagged</td><td>Threshold tuned for black, not gain-boosted grey; app logs were suppressed</td><td>rules: darkness metric; live: <code>dark_camera</code></td></tr>
+    <tr><td>20 to 30 s of silence before each reply</td><td>Note sync blocked the reply on the pipeline</td><td>live: first words within 4 s</td></tr>
+    <tr><td>Only the first photo pinned</td><td>Prompt said "first time you see each new thing"</td><td>prompt rule; manual phone check</td></tr>
+    <tr><td>Phone could not connect</td><td>Server started from the preview pane was stopped with it</td><td>manual: start with <code>run_phone.sh</code></td></tr>
+  </table></div>
+</section>
+
+<section id="manual">
+  <h2>10. Phone checklist</h2>
+  <p class="why">What only a real phone can prove. Run after the automated gate is green and before a demo. These boxes are for your own pass and are not saved.</p>
+  <div class="check">
+    <label><input type="checkbox" id="m1"> Greeting is audible on the phone speaker with the ringer on.</label>
+    <label><input type="checkbox" id="m2"> Talk over the agent mid-sentence once: it stops and answers you. Room noise alone does not interrupt it.</label>
+    <label><input type="checkbox" id="m3"> Ask a question, say nothing for ten seconds: one gentle re-ask, then silence.</label>
+    <label><input type="checkbox" id="m4"> Show a dark photo: amber "Too dark" overlay and the agent asks for light. Show a lit one: overlay clears, photo pinned.</label>
+    <label><input type="checkbox" id="m5"> Show two different angles: two pins in the Evidence strip.</label>
+    <label><input type="checkbox" id="m6"> Finish a claim: the closing line, Review &amp; submit visible, the summary screen opens.</label>
+    <label><input type="checkbox" id="m7"> Certificate still trusted; regenerate it if the Mac's Wi-Fi address changed.</label>
+    <label><input type="checkbox" id="m8"> Ask something off-topic once: a one-sentence decline and a return to the claim.</label>
+  </div>
+</section>
+
+<section id="config">
+  <h2>11. Settings</h2>
+  <p class="why">Environment variables read by the server. Defaults are the demo configuration.</p>
+  <div class="tbl"><table>
+    <tr><th>Variable</th><th>Default</th><th>Effect</th></tr>
+    <tr><td><code>FNOL_AUTO_ONLY</code></td><td>on</td><td><code>off</code> accepts home, health, and travel claims as in the original demo</td></tr>
+    <tr><td><code>FNOL_BARGE_IN</code></td><td>on</td><td><code>off</code> makes the agent finish every sentence before listening</td></tr>
+    <tr><td><code>FNOL_VAD_SILENCE_MS</code></td><td>900</td><td>Pause that ends the caller's turn</td></tr>
+    <tr><td><code>FNOL_LANGUAGE</code></td><td>en-US</td><td>Spoken and transcribed language</td></tr>
+    <tr><td><code>FNOL_SKETCH</code></td><td>off</td><td><code>on</code> restores the incident-sketch tool</td></tr>
+    <tr><td><code>FNOL_ALLOW_LAN</code></td><td>unset</td><td><code>1</code> accepts phones on private network addresses (set by <code>run_phone.sh</code>)</td></tr>
+    <tr><td><code>FNOL_TRUST_PROXY</code></td><td>unset</td><td><code>1</code> accepts a local HTTPS tunnel in front of the server</td></tr>
+    <tr><td><code>FNOL_GEMINI_LIVE_MODEL</code></td><td>gemini-3.8-live</td><td>Voice model</td></tr>
+    <tr><td><code>FNOL_VOICE</code></td><td>Kore</td><td>Prebuilt voice</td></tr>
+  </table></div>
+</section>
+
+<footer>Source of truth is the code: thresholds in <code>live_demo/server.py</code> and <code>live_demo/mobile/mobile.js</code>, rules in <code>policies.py</code>, the prompt in <code>live_demo/live_tools.py</code>. Update this page when any of those change.</footer>
+</main>
+</div>
+</div>

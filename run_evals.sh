@@ -16,4 +16,5 @@ if curl -s -m 3 http://127.0.0.1:4177/api/health >/dev/null; then
 else
   echo "SKIPPED: no server on 127.0.0.1:4177 (start the insurance-claim-agent preview or uvicorn first)"; status=1
 fi
-echo; [ $status = 0 ] && echo "ALL GREEN" || echo "FAILURES — do not release"; exit $status
+echo; echo "== report"; $PY evals/render_report.py 2>/dev/null | tail -1
+[ $status = 0 ] && echo "ALL GREEN" || echo "FAILURES — do not release"; exit $status
