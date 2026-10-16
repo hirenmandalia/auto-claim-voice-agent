@@ -1,0 +1,21 @@
+[
+  {
+    "scenario": "injury_escalates_and_closes",
+    "doc": "Claimant reports neck pain: the route escalates, the agent gives safety guidance, still works the checklist, and closes\n    with the urgent-review wording instead of stalling on 'finishing my notes'.",
+    "seconds": 78.3,
+    "pass": false,
+    "failures": [
+      "closing lacks the urgent-review/medical wording: 'To summarize, you were involved in a side-impact collision in Pleasanton near Valley Avenue and Santa Rita Road, and the other driver left the scene. Your claim mentions an injury, so a human representative should review this immediately. If anyone is in danger, contact local emergency services first. Your packet is ready to be reviewed in the app, and once you submit it, an adjuster will get started.'"
+    ],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?",
+      "I'm so sorry you're hurting, and please make sure to seek medical care for your neck. I'm noting that another vehicle hit you from the side near Valley Avenue and Santa Rita Road. Let me check that policy for you while I update our details.",
+      "I've verified your personal auto policy for Jordan Lee. Do you happen to have photos of the damage you could show me on your camera?",
+      "That's perfectly fine. Do you have a police report or any incident exchange form from the scene?",
+      "I'm noting that. Do you have any details about the other vehicle or any witnesses?",
+      "I'm noting that. Could you please provide the names of anyone who was injured and the location where they received treatment?",
+      "I'll note that there were no witnesses and no other driver details.",
+      "To summarize, you were involved in a side-impact collision in Pleasanton near Valley Avenue and Santa Rita Road, and the other driver left the scene. Your claim mentions an injury, so a human representative should review this immediately. If anyone is in danger, contact local emergency services first. Your packet is ready to be reviewed in the app, and once you submit it, an adjuster will get started."
+    ]
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "scenario": "voice_cancels_reask",
+    "doc": "Claimant activity inside the silence window must cancel the re-ask (incident: re-ask over the answer).",
+    "seconds": 30.1,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?",
+      "I'm sorry to hear about the damage to your van. Would you prefer I reach you by phone or email going forward?",
+      "I'm glad to hear that you're safe. Would you prefer I reach you by phone or email going forward?"
+    ]
+  }
+]

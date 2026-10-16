@@ -17,5 +17,4 @@ __pycache__/
 .idea/
 .vscode/
 *.log
-evals/reports/
 nohup.out

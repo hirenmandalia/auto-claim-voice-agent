@@ -1,0 +1,16 @@
+[
+  {
+    "scenario": "quiet_reask",
+    "doc": "After a question and ~10 s of silence: exactly one gentle re-ask, in different words, then silence.",
+    "seconds": 70.4,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hi Jordan, I'm here to help with your claim. Are you and everyone else in a safe place right now?",
+      "I'm so glad to hear you're all safe. I'm making a note that you were rear-ended at a red light on Coleman Avenue this morning.",
+      "When you have a moment, could you turn on your camera so I can see the damage to your vehicle?",
+      "I've noted that no one was hurt and that email is best for reaching you. Could you please turn on your camera so I can see the damage to your rear bumper?",
+      "There's no rush, but when you're ready, could you show me the damage to your rear bumper?"
+    ]
+  }
+]

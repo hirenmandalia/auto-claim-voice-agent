@@ -1,0 +1,96 @@
+[
+  {
+    "id": "glass_rock_chip",
+    "title": "Glass only, rock chip",
+    "tests": "Short call: no police report, no other party; closes fast without irrelevant questions.",
+    "pass": false,
+    "failures": [
+      "asked about other_driver_exchange although irrelevant: \"That's fine. Do you have any information about the other driver or witnesses?\"",
+      "asked about police although irrelevant: \"That's alright. Do you happen to have a police report or any incident exchange form from when it happened?\""
+    ],
+    "notes": [
+      "first words: median 1.0s, worst 2.7s"
+    ],
+    "route": "policy_review",
+    "closed": true,
+    "seconds": 78.8,
+    "extraction": {
+      "checks": {
+        "date": true,
+        "location": true,
+        "cause": true,
+        "injuries": true,
+        "contact": true,
+        "other_party": true
+      },
+      "score": 100
+    },
+    "judge": {
+      "warmth": 4,
+      "no_repetition": 3,
+      "collected_what_caller_had": 3,
+      "no_advice": 5,
+      "efficiency": 2,
+      "worst_moment": "Do you happen to have a police report or any incident exchange form from when it happened?"
+    },
+    "transcript": [
+      {
+        "who": "Agent",
+        "text": "Hello, Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yes, I'm safe. This morning on 101 near Oakland Rd in San Jose, a truck kicked up a rock, chipping my Sienna's windshield. No injuries, prefer email, no photos yet."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm sorry to hear about your windshield. If you're ready, you can turn on your camera and show me the damage."
+      },
+      {
+        "who": "Claimant",
+        "text": "I don't have my car here or photos right now to show you."
+      },
+      {
+        "who": "Agent",
+        "text": "That's alright. Do you happen to have a police report or any incident exchange form from when it happened?"
+      },
+      {
+        "who": "Claimant",
+        "text": "No, I don't have a police report or any forms."
+      },
+      {
+        "who": "Agent",
+        "text": "That's fine. Do you have any information about the other driver or witnesses?"
+      },
+      {
+        "who": "Claimant",
+        "text": "No, it was just a truck ahead of me, no contact or info."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm noting that. \\pause"
+      },
+      {
+        "who": "Claimant",
+        "text": "Okay, thanks. What's the next step to get this processed?"
+      },
+      {
+        "who": "Agent",
+        "text": "I've made a note that no information was available for the other driver. Your claim packet is now ready, and you can review it in the app. Once you submit it, an adjuster will get started on it."
+      },
+      {
+        "who": "Claimant",
+        "text": "Thanks for your help. I'll check the app now. Goodbye."
+      },
+      {
+        "who": "Agent",
+        "text": "Just submit the packet in the app, and an adjuster will review it and get started on your claim."
+      },
+      {
+        "who": "Agent",
+        "text": "You're very welcome. Take care."
+      }
+    ],
+    "run": 1
+  }
+]

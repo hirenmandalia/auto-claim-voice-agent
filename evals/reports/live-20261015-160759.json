@@ -1,0 +1,72 @@
+[
+  {
+    "scenario": "greeting",
+    "doc": "Agent speaks first, by name, within 12 s, asks about safety, and does not speak twice unprompted.",
+    "seconds": 12.9,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?"
+    ]
+  },
+  {
+    "scenario": "latency_single_reply",
+    "doc": "Reply starts within 3 s of the claimant's turn; exactly one reply, then it waits.",
+    "seconds": 22.9,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help you with your claim. Are you and everyone else in a safe place?",
+      "I'm noting that scratch on the passenger door. Would you like to turn on your camera so I can see the damage?"
+    ]
+  },
+  {
+    "scenario": "full_call_closes",
+    "doc": "Facts, then answer whatever the agent asks (checklist only), expect the closing line, state.closed, no question after.",
+    "seconds": 59.8,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?",
+      "I'm noting that you were rear-ended on Coleman Avenue this morning. Would you be able to show me the damage to your Toyota Sienna using your camera?",
+      "That's quite alright, we can skip photos for now. Do you happen to have a police report or incident exchange form from the scene?",
+      "I completely understand. Do you happen to have the other driver's information or details from any witnesses?",
+      "I've noted that no other information or witness details were gathered. Your claim packet is now ready, and you can review it in the app. Once you submit it, an adjuster will get started on it."
+    ]
+  },
+  {
+    "scenario": "quiet_reask",
+    "doc": "After a question and ~10 s of silence: exactly one gentle re-ask, in different words, then silence.",
+    "seconds": 47.2,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?",
+      "I'm so glad to hear that everyone is safe. I'm noting the details of the accident this morning, so let me know which you prefer: a phone call or an email?",
+      "Take your time. Would you rather I update you using your phone number or your email?"
+    ]
+  },
+  {
+    "scenario": "voice_cancels_reask",
+    "doc": "Claimant activity inside the silence window must cancel the re-ask (incident: re-ask over the answer).",
+    "seconds": 27.1,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?",
+      "I'm glad to hear everyone is safe. I'm noting that a cart hit your van at Safeway this morning.",
+      "I'm noting the scratch on the passenger door, and I'm very glad to hear nobody was hurt. Would you be able to show me the damage on your camera?"
+    ]
+  },
+  {
+    "scenario": "dark_camera",
+    "doc": "Three dark frames \u2192 lighting event + the agent asks for light; bright frames clear it.",
+    "seconds": 19.3,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?",
+      "It's a little too dark for me to see clearly right now. Could you please turn on a light or move somewhere a bit brighter so I can help?"
+    ]
+  }
+]

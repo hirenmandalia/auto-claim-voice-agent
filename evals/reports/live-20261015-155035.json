@@ -1,0 +1,17 @@
+[
+  {
+    "scenario": "full_call_closes",
+    "doc": "Facts \u2192 photos \u2192 police \u2192 other driver \u2192 closing line, with state.closed true and no question after closing.",
+    "seconds": 90.4,
+    "pass": false,
+    "failures": [
+      "no closing line within 45 s of the last answer; last agent: \"I understand, a report isn't always filed. Do you have any initial estimates or receipts related to the damage?\""
+    ],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help you with your claim. First, are you and everyone else in a safe place?",
+      "I'm noting that, and I'm glad everyone is safe.",
+      "That's perfectly fine. Did you happen to exchange information with the other driver?",
+      "I understand, a report isn't always filed. Do you have any initial estimates or receipts related to the damage?"
+    ]
+  }
+]

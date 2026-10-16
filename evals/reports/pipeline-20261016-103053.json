@@ -1,0 +1,80 @@
+[
+  {
+    "case": "contact_preference_only",
+    "why": "Incident: extractor listed 'Specific email address' as missing after the claimant chose email.",
+    "seconds": 7.9,
+    "pass": true,
+    "failures": [],
+    "route": "policy_review",
+    "missing": [],
+    "closing_allowed": false
+  },
+  {
+    "case": "injury_unanswered_no_escalation",
+    "why": "Incident: 'Escalated to a person' flashed before the claimant answered the safety question.",
+    "seconds": 6.6,
+    "pass": true,
+    "failures": [],
+    "route": "policy_review",
+    "missing": [
+      "contact_method",
+      "Injuries or physical safety status not confirmed",
+      "Specific contact information preference"
+    ],
+    "closing_allowed": false
+  },
+  {
+    "case": "other_driver_fled_closes",
+    "why": "Incident: 'other driver's insurance details' stuck in missing facts and the claim never closed.",
+    "seconds": 7.7,
+    "pass": true,
+    "failures": [],
+    "route": "policy_review",
+    "missing": [],
+    "closing_allowed": true
+  },
+  {
+    "case": "policy_never_missing",
+    "why": "Incident: the agent asked for the policy number. The verified account context must always fill it.",
+    "seconds": 5.8,
+    "pass": true,
+    "failures": [],
+    "route": "policy_review",
+    "missing": [],
+    "closing_allowed": false
+  },
+  {
+    "case": "real_injury_escalates",
+    "why": "A present injury must still escalate (we only removed the 'uncertain' trigger).",
+    "seconds": 7.1,
+    "pass": true,
+    "failures": [],
+    "route": "emergency_escalation",
+    "missing": [
+      "contact_method",
+      "Specific intersection or street address on Coleman Ave",
+      "Exact time of the collision"
+    ],
+    "closing_allowed": false
+  },
+  {
+    "case": "rear_end_no_injury_full",
+    "why": "Happy path: every core fact + checklist answered. Must close, no escalation.",
+    "seconds": 8.9,
+    "pass": true,
+    "failures": [],
+    "route": "policy_review",
+    "missing": [],
+    "closing_allowed": true
+  },
+  {
+    "case": "shopping_cart_parking_lot",
+    "why": "Low-severity property-only claim, no third party. Must not escalate; checklist still applies.",
+    "seconds": 7.1,
+    "pass": true,
+    "failures": [],
+    "route": "policy_review",
+    "missing": [],
+    "closing_allowed": true
+  }
+]

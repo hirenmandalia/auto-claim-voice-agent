@@ -1,0 +1,16 @@
+[
+  {
+    "scenario": "full_call_closes",
+    "doc": "Facts, then answer whatever the agent asks (checklist only), expect the closing line, state.closed, no question after.",
+    "seconds": 62.5,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?",
+      "I'm noting those details about the accident on Coleman Avenue. I've sent these facts over to our team, so could you please turn on your camera so I can see the damage to your Toyota Sienna?",
+      "I understand you can't access the car right now. Did the police come to the scene, or did you exchange information with the other driver?",
+      "I've noted that no police report was filed. Do you happen to have the other driver's insurance details or license plate number?",
+      "To summarize, you were rear-ended at a red light on Coleman Avenue this morning, and everyone is safe. Your claim packet is now ready, and you can review it in the app. Once you submit it, an adjuster will get started on it."
+    ]
+  }
+]

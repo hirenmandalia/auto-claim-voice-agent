@@ -1,0 +1,18 @@
+[
+  {
+    "scenario": "injury_escalates_and_closes",
+    "doc": "Claimant reports neck pain: the route escalates, the agent gives safety guidance, still works the checklist, and closes\n    with the urgent-review wording instead of stalling on 'finishing my notes'.",
+    "seconds": 58.4,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?",
+      "I'm so sorry to hear about your neck pain, so please be sure to seek medical care right away. I'm noting these details now.",
+      "If you're able to, would you mind turning on your camera to show me the photos of the damage?",
+      "That's completely fine, we can move on. Did you happen to get a police report or an incident exchange form?",
+      "That is perfectly fine, we can note that. Did you happen to collect information for the other driver or any witnesses?",
+      "I have noted that down for my records.",
+      "Your claim packet is ready, and you can review it in the app. Once you submit it, an adjuster will get started. Please be sure to seek medical care for your neck pain, and I've flagged this for urgent human review."
+    ]
+  }
+]

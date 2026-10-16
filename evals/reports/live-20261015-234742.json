@@ -1,0 +1,17 @@
+[
+  {
+    "scenario": "full_call_closes",
+    "doc": "Facts, then answer whatever the agent asks (checklist only), expect the closing line, state.closed, no question after.",
+    "seconds": 70.9,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your personal auto claim. First, I want to make sure you and everyone involved are in a safe place.",
+      "I'm noting those details about the accident on Coleman Avenue. Since your camera is off, would you be able to show me photos of the damage to your Toyota Sienna?",
+      "That's perfectly fine, we can note that for now. Did you happen to get a police report or complete an accident exchange form with the other driver?",
+      "I understand, I'll make a note of that. Do you happen to have the other driver's insurance or contact information?",
+      "I've noted that the other party left the scene without exchanging information.",
+      "I've noted that your Toyota Sienna was rear-ended at a red light on Coleman Avenue this morning. Your claim packet is now ready for you to review in the app, and once you submit it, an adjuster will get started on your claim."
+    ]
+  }
+]

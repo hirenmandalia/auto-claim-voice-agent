@@ -1,0 +1,77 @@
+[
+  {
+    "scenario": "greeting",
+    "doc": "Agent speaks first, by name, within 12 s, asks about safety, and does not speak twice unprompted.",
+    "seconds": 13.1,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?"
+    ]
+  },
+  {
+    "scenario": "latency_single_reply",
+    "doc": "Reply starts within 3 s of the claimant's turn; exactly one reply, then it waits.",
+    "seconds": 20.0,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place right now?",
+      "I'm so glad everyone is safe, and I've noted your preference for email."
+    ]
+  },
+  {
+    "scenario": "full_call_closes",
+    "doc": "Facts \u2192 photos \u2192 police \u2192 other driver \u2192 closing line, with state.closed true and no question after closing.",
+    "seconds": 87.8,
+    "pass": false,
+    "failures": [
+      "state.closed never became true (Review & submit button would stay hidden)"
+    ],
+    "agent_turns": [
+      "Hi Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?",
+      "I'm glad to hear you're all safe. I've noted the details about the accident on Coleman Avenue this morning and set your preference to email.",
+      "That's completely fine, we can take photos later. Do you have a police report or was any insurance information exchanged at the scene?",
+      "That is alright, many minor incidents don't require a police report.",
+      "I've noted that the other driver left the scene and there were no witnesses.",
+      "I've noted that you were rear-ended at a red light on Coleman Avenue this morning. Your claim packet is now ready, and you can review it in the app; once you submit it, an adjuster will get started."
+    ]
+  },
+  {
+    "scenario": "quiet_reask",
+    "doc": "After a question and ~10 s of silence: exactly one gentle re-ask, in different words, then silence.",
+    "seconds": 47.9,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?",
+      "I'm so sorry that happened, but I'm glad you're safe. Did the other driver share their insurance information with you?",
+      "No rush at all. Could you tell me if you were able to get the other driver's insurance details?"
+    ]
+  },
+  {
+    "scenario": "voice_cancels_reask",
+    "doc": "Claimant activity inside the silence window must cancel the re-ask (incident: re-ask over the answer).",
+    "seconds": 28.9,
+    "pass": false,
+    "failures": [
+      "non-Latin script in agent transcript"
+    ],
+    "agent_turns": [
+      "\u6fdfHi Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?",
+      "I'm glad you're safe, and I'm noting that a cart hit your van at Safeway this morning. I'm recording those details now.",
+      "Got it, I'm noting the damage to the passenger door and confirming that there were no injuries. Do you prefer to be reached by phone or email for updates?"
+    ]
+  },
+  {
+    "scenario": "dark_camera",
+    "doc": "Three dark frames \u2192 lighting event + the agent asks for light; bright frames clear it.",
+    "seconds": 18.5,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello, Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?",
+      "It's a little too dark for me to see clearly right now. Could you please turn on a light or move somewhere brighter?"
+    ]
+  }
+]

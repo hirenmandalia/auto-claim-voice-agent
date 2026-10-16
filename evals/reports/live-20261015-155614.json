@@ -1,0 +1,16 @@
+[
+  {
+    "scenario": "full_call_closes",
+    "doc": "Facts, then answer whatever the agent asks (checklist only), expect the closing line, state.closed, no question after.",
+    "seconds": 53.7,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?",
+      "I'm noting that rear-end accident on Coleman Ave this morning. Could you please confirm around what time it happened?",
+      "That is okay. Were you able to exchange information with the other driver involved?",
+      "I understand. If you have any photos of the damage, you can use your camera to show me now.",
+      "I've noted the rear-end accident on Coleman Ave this morning. Your claim packet is ready for you to review in the app, and once you submit it, an adjuster will get started on it."
+    ]
+  }
+]

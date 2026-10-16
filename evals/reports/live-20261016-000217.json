@@ -1,0 +1,20 @@
+[
+  {
+    "scenario": "injury_escalates_and_closes",
+    "doc": "Claimant reports neck pain: the route escalates, the agent gives safety guidance, still works the checklist, and closes\n    with the urgent-review wording instead of stalling on 'finishing my notes'.",
+    "seconds": 56.3,
+    "pass": false,
+    "failures": [
+      "route is 'policy_review', expected emergency_escalation after a reported injury",
+      "closing lacks the urgent-review/medical wording: \"I've noted that as well. I've finished noting your report of the side-impact collision involving your Toyota Sienna in Pleasanton. Your claim packet is now ready for you to review in the app, and once you submit it, an adjuster will get started on it.\""
+    ],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Is everyone safe and in a secure place?",
+      "I'm noting those details about the accident in Pleasanton. I've updated your preference to be contacted by phone.",
+      "Do you happen to have any photos of the damage to your vehicle that you could show me?",
+      "That's completely fine. Do you happen to have a police report or an exchange form from the other driver?",
+      "I've noted that for our records. Do you have any receipts, estimates, or invoices related to the damage?",
+      "I've noted that as well. I've finished noting your report of the side-impact collision involving your Toyota Sienna in Pleasanton. Your claim packet is now ready for you to review in the app, and once you submit it, an adjuster will get started on it."
+    ]
+  }
+]

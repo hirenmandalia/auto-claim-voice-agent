@@ -1,0 +1,16 @@
+[
+  {
+    "scenario": "quiet_reask",
+    "doc": "After a question and ~10 s of silence: exactly one gentle re-ask, in different words, then silence.",
+    "seconds": 59.5,
+    "pass": false,
+    "failures": [
+      "no gentle re-ask within 30 s of silence"
+    ],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place right now?",
+      "Glad to hear you're all safe. I'm noting the rear-end collision on Coleman Avenue this morning.",
+      "Do you have any photos, or would you be able to turn on your camera so I can see the damage to your vehicle?"
+    ]
+  }
+]

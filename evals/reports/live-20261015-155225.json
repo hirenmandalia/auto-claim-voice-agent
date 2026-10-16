@@ -1,0 +1,19 @@
+[
+  {
+    "scenario": "full_call_closes",
+    "doc": "Facts, then answer whatever the agent asks (checklist only), expect the closing line, state.closed, no question after.",
+    "seconds": 63.7,
+    "pass": false,
+    "failures": [
+      "asked for an off-checklist item: 'Got it. Do you have any initial estimates, receipts, or invoices from the incident available?/'"
+    ],
+    "agent_turns": [
+      "Hello, Jordan. I'm here to help with your claim, so let me start by asking, are you and everyone else in a safe place?",
+      "I've noted the details of the accident and your preference for email. Would you happen to have any photos of the damage to your vehicle?",
+      "I understand, that's completely fine. Was a police report filed or did you exchange information with the other driver?",
+      "Got it. Do you have any initial estimates, receipts, or invoices from the incident available?/",
+      "That's completely fine. To summarize, you've reported being rear ended at a red light this morning in San Jose, and thankfully everyone is safe. Your claim packet is now ready, and you can review it in the app; once you submit it, an adjuster will get started on it.",
+      "To summarize, you reported being rear ended at a red light this morning in San Jose, and thankfully everyone is safe. Your claim packet is now ready, and you can review it in the app; once you submit it, an adjuster will get started on it."
+    ]
+  }
+]

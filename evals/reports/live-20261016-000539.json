@@ -1,0 +1,25 @@
+[
+  {
+    "scenario": "injury_escalates_and_closes",
+    "doc": "Claimant reports neck pain: the route escalates, the agent gives safety guidance, still works the checklist, and closes\n    with the urgent-review wording instead of stalling on 'finishing my notes'.",
+    "seconds": 145.6,
+    "pass": false,
+    "failures": [
+      "state.closed never became true"
+    ],
+    "agent_turns": [
+      "Hello, Jordan, I'm here to help with your claim. Are you and everyone else in a safe place right now?",
+      "Please contact emergency services if anyone is in danger and be sure to seek medical care for your neck. I'm noting this, and a human representative will review your packet.",
+      "To help me understand what happened, could you turn on your camera and show me the damage to your vehicle?",
+      "That's fine. Do you have a police report or any information from the other driver?",
+      "I understand. Did you happen to collect the other driver's insurance or contact details?",
+      "I'm noting that. Please make sure to seek medical care for your neck as soon as possible.",
+      "Could you tell me who was injured and if anyone has received medical treatment?",
+      "Please consider resting your neck, applying ice gently, and avoiding any sudden movements. This information is not medical advice or diagnosis; please see a healthcare professional for a proper evaluation.",
+      "Were you able to receive any medical treatment, or do you plan to see a doctor for your sore neck?",
+      "I am noting that you are able to talk.",
+      "Is there anyone else who was injured or any other information you can share about who was in your vehicle?",
+      "I'm noting that. Your claim is flagged for urgent human review, so please get medical care for your neck. Your packet is now ready; you can review it in the app, and once you submit it, an adjuster will get started on it."
+    ]
+  }
+]

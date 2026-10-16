@@ -1,0 +1,18 @@
+[
+  {
+    "scenario": "full_call_closes",
+    "doc": "Facts \u2192 photos \u2192 police \u2192 other driver \u2192 closing line, with state.closed true and no question after closing.",
+    "seconds": 82.6,
+    "pass": false,
+    "failures": [
+      "state.closed never became true (Review & submit button would stay hidden)"
+    ],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else involved in a safe place right now?",
+      "I'm glad to hear everyone is safe, and I've noted that email is your preferred way to connect.",
+      "That is perfectly alright. Did you happen to exchange information with the driver who hit you?",
+      "That's completely fine, many minor incidents don't require a report. Do you have any estimates or receipts for repairs yet?",
+      "I understand, that's completely fine. I have everything I need right now. Your claim packet is ready, you can review it in the app, and once you submit it, an adjuster will get started on it."
+    ]
+  }
+]

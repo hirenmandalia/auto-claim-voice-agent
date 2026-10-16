@@ -1,0 +1,15 @@
+[
+  {
+    "scenario": "collects_other_driver_on_camera",
+    "doc": "Claimant HAS the other driver's details: the agent asks to see them on camera (and the app gets a camera_request),\n    never defers them to 'the app' or 'later'.",
+    "seconds": 28.8,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your auto claim. Are you and everyone else in a safe place?",
+      "I'm noting those details about the accident on Coleman Avenue. Would you be able to turn on your camera and show me the damage to your vehicle?",
+      "I understand. Do you have a police report or an incident exchange form from the other driver?",
+      "That's perfect. Could you please turn on your camera and show me the insurance card and the license plate?"
+    ]
+  }
+]

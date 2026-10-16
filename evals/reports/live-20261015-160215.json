@@ -1,0 +1,13 @@
+[
+  {
+    "scenario": "latency_single_reply",
+    "doc": "Reply starts within 3 s of the claimant's turn; exactly one reply, then it waits.",
+    "seconds": 23.9,
+    "pass": true,
+    "failures": [],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place right now?",
+      "I've noted those details about the shopping cart scratching your van. Would you happen to have any photos of the damage you could show me?"
+    ]
+  }
+]

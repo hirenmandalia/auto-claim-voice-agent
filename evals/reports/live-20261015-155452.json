@@ -1,0 +1,16 @@
+[
+  {
+    "scenario": "full_call_closes",
+    "doc": "Facts, then answer whatever the agent asks (checklist only), expect the closing line, state.closed, no question after.",
+    "seconds": 104.0,
+    "pass": false,
+    "failures": [
+      "no closing line after 0 answers; last agent: \"By the way, I've noted that email is your preferred way to communicate. Do you have any photos of the vehicle damage you can show me using your camera?\""
+    ],
+    "agent_turns": [
+      "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?",
+      "Glad to hear everyone is safe. I'm noting the details of the accident on Coleman Avenue.",
+      "By the way, I've noted that email is your preferred way to communicate. Do you have any photos of the vehicle damage you can show me using your camera?"
+    ]
+  }
+]
