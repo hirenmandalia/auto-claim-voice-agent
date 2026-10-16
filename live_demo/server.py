@@ -99,13 +99,15 @@ if not logging.getLogger().handlers:
 logger.setLevel(logging.INFO)
 FRAME_MAX_AGE_SECONDS = 12.0
 # Transcription placeholders for silence. Must never be shown or spoken, and never treated as a turn.
-SILENCE_PLACEHOLDER = re.compile(r"^\W*(no speech|no audio|silence|\(silence\)|\[silence\]|no response|\.\.\.)\W*$", re.IGNORECASE)
+SILENCE_PLACEHOLDER = re.compile(r"^[\W\u200b\u200c\ufeff]*((<no speech>|no speech|no audio|silence|\(silence\)|\[silence\]|no response|\{pause\}|\\pause|pause|\.\.\.)[\W\u200b\u200c\ufeff]*)*$", re.IGNORECASE)
 # The agent asked the claimant to show something: the app should open the camera for them.
 CAMERA_ASK = re.compile(r"\b(show me|hold (it|that|the card|the form|them) up|point (the|your) camera|turn on (the|your) camera|on (the|your) camera|use (the|your) camera)\b", re.IGNORECASE)
 # Status the agent may never invent before the real closing: nothing is submitted, reviewed, or followed up by the agent.
 PREMATURE_CLOSE = re.compile(r"\b(being submitted|has been submitted|is (now )?submitted|submitted (for|to) (a )?(human )?review|sent (to|for) (an? )?(adjuster|review)|(human|a) reviewer will|will (get in touch|reach out|contact you|be in touch)|we('ll| will) (call|email) you)\b", re.IGNORECASE)
 # Documents that are not on the auto checklist. The prompt forbids asking for them; this backstop cuts the question.
 OFF_CHECKLIST_ASK = re.compile(r"\b(repair )?(estimates?|receipts?|invoices?|medical (records?|bills?|documentation|documents?)|mileage|odometer|VIN)\b.*\?", re.IGNORECASE | re.DOTALL)
+# The agent declined a non-auto loss. Even with no facts collected, the app must show "Auto claims only".
+SCOPE_DECLINE = re.compile(r"only (take|handle|help with|accept)[^.]{0,40}auto|auto (insurance )?claims only|can only (take|help with) auto|not an auto (insurance )?claim|contact (your|the) insurer for (your|that|the) (home|renters|health|travel|life|pet|other)", re.IGNORECASE)
 CLOSING_LINE = re.compile(r"packet is (now )?ready|review (it )?in the app|once you submit", re.IGNORECASE)
 # The agent must speak English; a transcript chunk in another script means the voice drifted (seen: Spanish, Devanagari).
 NON_LATIN = re.compile(r"[\u0400-\u04FF\u0590-\u05FF\u0600-\u06FF\u0900-\u0DFF\u0E00-\u0E7F\u3040-\u30FF\u3400-\u9FFF\uAC00-\uD7AF]")
@@ -269,6 +271,7 @@ class IntakeSession:
     closing_nudged: bool = False
     closing_allowed_latest: bool = False
     closed: bool = False   # the agent has spoken the closing line; stays true even if later notes reshuffle
+    declined_scope: bool = False
     quality_task: Any = None
     quality_notified_at: float = 0.0
     dark_notice_active: bool = False
@@ -673,7 +676,11 @@ def _state_from_workflow(session: IntakeSession, workflow: dict[str, Any]) -> di
     state = _ui_state(session, validation, coverage, checklist, fraud_gate, packet, events)
     convo_text = " ".join(t["text"] for t in session.transcript if t["speaker"] in {"Agent", "Claimant"})
     agent_text = " ".join(t["text"] for t in session.transcript if t["speaker"] == "Agent")
-    summary = summarize_workflow_for_voice(workflow, convo_text)
+    claimant_only = " ".join(t["text"] for t in session.transcript if t["speaker"] == "Claimant")
+    summary = summarize_workflow_for_voice(workflow, convo_text, claimant_only)
+    if session.declined_scope and state.get("route") != "emergency_escalation":
+        state["route"] = session.route = "out_of_scope"
+        summary["closing_allowed"] = False
     state["closing_allowed"] = summary["closing_allowed"]
     session.closing_allowed_latest = bool(summary["closing_allowed"])
     state["closed"] = session.closed or (summary["closing_allowed"] and bool(re.search(r"packet is (now )?ready|once you submit", agent_text.lower())))
@@ -1330,7 +1337,9 @@ async def live_voice(websocket: WebSocket) -> None:
 
     async def finalize(speaker):
         turn = pending[speaker]
+        turn["text"] = re.sub(r"[\u200b\u200c\ufeff]", "", turn["text"])
         if not turn["text"].strip():
+            pending[speaker] = {"id": uuid.uuid4().hex, "text": ""}
             return
         if SILENCE_PLACEHOLDER.match(turn["text"]):
             pending[speaker] = {"id": uuid.uuid4().hex, "text": ""}
@@ -1349,6 +1358,11 @@ async def live_voice(websocket: WebSocket) -> None:
             # or a first question (if the reply had none). Never chains into a second re-ask.
             turn_state["rephrased_for"] = pending_last_claimant_id()
             track(asyncio.create_task(follow_up_if_quiet(turn["id"], asked_question="?" in turn["text"])))
+        if speaker == "Agent" and SCOPE_DECLINE.search(turn["text"]) and not session.declined_scope:
+            session.declined_scope = True
+            session.route = "out_of_scope"
+            if session.last_workflow:
+                await send({"type": "state", "state": _current_ui_state(session)})
         if speaker == "Agent" and CLOSING_LINE.search(turn["text"]) and session.last_workflow:
             # The closing line is an agent turn, so no claim-graph run follows it: push the state now so the
             # app flips to "closed" (Review & submit) the moment the line is spoken. The guards keep the agent
@@ -1382,13 +1396,14 @@ async def live_voice(websocket: WebSocket) -> None:
                 request_update()
                 # Both speakers count: an item the claimant volunteered ("no police report") is addressed too.
                 convo_text = " ".join(t["text"] for t in session.transcript if t["speaker"] in {"Agent", "Claimant"})
+                claimant_only = " ".join(t["text"] for t in session.transcript if t["speaker"] == "Claimant")
                 cached = session.last_workflow
                 if cached:
-                    result = summarize_workflow_for_voice(cached, convo_text)
+                    result = summarize_workflow_for_voice(cached, convo_text, claimant_only)
                     result["note"] = ("Notes from the latest turn are still being written in the background, so open_items may "
                                       "lag by one turn: if the claimant just answered something, do not ask it again. "
                                       "Keep the conversation moving; never mention processing or waiting.")
-                    if not result.get("documents_not_yet_asked_about") and not result.get("closing_allowed"):
+                    if not result.get("documents_not_yet_asked_about") and not result.get("core_facts_still_needed") and not result.get("offered_but_not_yet_collected") and not result.get("closing_allowed"):
                         result["all_items_covered"] = True
                         result["closing_rule"] = (
                             "Every checklist item has now been covered. Your notes are being finalized and that takes up to "

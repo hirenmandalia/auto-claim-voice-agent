@@ -1,0 +1,47 @@
+{
+  "id": "single_vehicle_pole",
+  "title": "Single vehicle, hit a pole",
+  "tests": "No other driver exists; the agent must not ask about exchanging information with another driver.",
+  "persona": {
+    "style": "embarrassed, chatty",
+    "volunteer_up_front": false
+  },
+  "facts": {
+    "policyholder": "Jordan Lee",
+    "policy_number": "AUTO-90210",
+    "vehicle": "2013 Toyota Sienna",
+    "what_happened": "I misjudged a turn in the Target parking lot on Coleman Ave and scraped the front bumper against a concrete light pole",
+    "when": "yesterday evening",
+    "injuries": "no",
+    "other_party": "nobody else was involved, just me and the pole",
+    "has_photos": "I can take some later, not right now",
+    "police_report": "no, there was no reason to",
+    "contact": "email"
+  },
+  "expect": {
+    "route": "policy_review",
+    "closes": true,
+    "should_ask": [
+      "photos"
+    ],
+    "should_not_ask": [
+      "other_driver_exchange"
+    ],
+    "camera_request": false
+  },
+  "truth": {
+    "date_of_loss": "2026-10-15",
+    "location_keywords": [
+      "target",
+      "coleman"
+    ],
+    "cause_keywords": [
+      "pole",
+      "scrap",
+      "bumper"
+    ],
+    "injury_status": "absent",
+    "other_party": "none",
+    "contact_method": "email"
+  }
+}

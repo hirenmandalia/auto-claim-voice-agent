@@ -20,6 +20,7 @@ def latest(prefix, key):
     merged, order = {}, []
     for f in files:
         for rec in json.loads(f.read_text()):
+            if rec.get("_meta"): continue
             k = rec[key]
             if k not in merged:
                 order.append(k)
@@ -62,13 +63,19 @@ def pill(ok, text=None):
     return f'<span class="pill {cls}">{e(text or ("PASS" if ok else "FAIL"))}</span>'
 
 
-def render(rules, pipeline, pipe_name, live, live_name, hlth, base):
+def render(rules, pipeline, pipe_name, live, live_name, scen, scen_name, hlth, base):
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     rules_ok = not rules["failed"]
     pipe_ok = bool(pipeline) and all(c["pass"] for c in pipeline)
     live_ok = bool(live) and all(s["pass"] for s in live)
-    gate = rules_ok and pipe_ok and live_ok
+    scen_ok = (not scen) or all(r["pass"] for r in scen)
+    gate = rules_ok and pipe_ok and live_ok and scen_ok
     verdict = "Release gate: GREEN" if gate else "Release gate: RED"
+    accs = [r["extraction"]["score"] for r in (scen or []) if r.get("extraction")]
+    acc_avg = (sum(accs) // len(accs)) if accs else None
+    judge_keys = ("warmth", "no_repetition", "collected_what_caller_had", "no_advice", "efficiency")
+    jvals = [r["judge"][k] for r in (scen or []) for k in judge_keys if isinstance((r.get("judge") or {}).get(k), int)]
+    judge_avg = round(sum(jvals) / len(jvals), 1) if jvals else None
     latency = next((float(s["seconds"]) for s in (live or []) if s["scenario"] == "latency_single_reply"), None)
     first_words = None
     for s in live or []:
@@ -79,6 +86,9 @@ def render(rules, pipeline, pipe_name, live, live_name, hlth, base):
       <div class="tile {'good' if rules_ok else 'bad'}"><div class="k">Rules</div><div class="v">{rules['ran'] - len(rules['failed'])}<small>/{rules['ran']}</small></div><div class="s">no network</div></div>
       <div class="tile {'good' if pipe_ok else 'bad' if pipeline else 'none'}"><div class="k">Notes pipeline</div><div class="v">{sum(c['pass'] for c in pipeline) if pipeline else '–'}<small>/{len(pipeline) if pipeline else '–'}</small></div><div class="s">{e(pipe_name or 'no report')}</div></div>
       <div class="tile {'good' if live_ok else 'bad' if live else 'none'}"><div class="k">Live conversation</div><div class="v">{sum(s['pass'] for s in live) if live else '–'}<small>/{len(live) if live else '–'}</small></div><div class="s">{e(live_name or 'no report')}</div></div>
+      <div class="tile {'good' if scen_ok and scen else 'bad' if scen else 'none'}"><div class="k">Scenarios</div><div class="v">{sum(r['pass'] for r in scen) if scen else '–'}<small>/{len(scen) if scen else '–'}</small></div><div class="s">{e(scen_name or 'no report')}</div></div>
+      <div class="tile metric"><div class="k">Extraction accuracy</div><div class="v">{acc_avg if acc_avg is not None else '–'}<small>%</small></div><div class="s">tracked, not gated</div></div>
+      <div class="tile metric"><div class="k">Judge score</div><div class="v">{judge_avg if judge_avg is not None else '–'}<small>/5</small></div><div class="s">tracked, not gated</div></div>
       <div class="tile {'good' if gate else 'bad'}"><div class="k">Verdict</div><div class="v small">{'GREEN' if gate else 'RED'}</div><div class="s">{'ship it' if gate else 'do not release'}</div></div>
     </div>"""
 
@@ -109,6 +119,18 @@ def render(rules, pipeline, pipe_name, live, live_name, hlth, base):
                 jhtml = "<div class='judge'>" + " ".join(f"<span><b>{e(k)}</b> {e(v)}</span>" for k, v in judge.items() if k not in ("worst_line", "reason")) + (f"<div class='why'>{e(judge.get('reason',''))}</div>" if judge.get("reason") else "") + "</div>"
             fails = "<ul class='fails'>" + "".join(f"<li>{e(f)}</li>" for f in s["failures"]) + "</ul>" if s["failures"] else ""
             yield f"""<details class="scenario {'ok' if s['pass'] else 'bad'}"><summary>{pill(s['pass'])} <code>{e(s['scenario'])}</code> <span class="num">{s['seconds']:.1f} s · {e(s.get('_source',''))}</span><span class="doc">{e((s.get('doc') or '').strip().splitlines()[0] if s.get('doc') else '')}</span></summary>{fails}{jhtml}<ol class="turns">{turns}</ol></details>"""
+    def scen_rows():
+        for r in scen or []:
+            acc = r.get("extraction") or {}
+            checks = " ".join(f'<span class="chk {"ok" if v else "bad"}">{e(k)}</span>' for k, v in (acc.get("checks") or {}).items())
+            jd = r.get("judge") or {}
+            jrow = " ".join(f"<span><b>{e(k.replace('_',' '))}</b> {jd[k]}</span>" for k in judge_keys if isinstance(jd.get(k), int))
+            worst = jd.get("worst_moment"); worst_html = f"<div class='why'>Judge's worst moment: {e(worst)}</div>" if worst and str(worst).lower() != "none" else ""
+            fails = "<ul class='fails'>" + "".join(f"<li>{e(x)}</li>" for x in r["failures"]) + "</ul>" if r["failures"] else ""
+            notes = "".join(f"<div class='why'>{e(n)}</div>" for n in r.get("notes", []))
+            convo = "".join(f"<li class='{l['who'].lower()}'><b>{e(l['who'])}</b> {e(l['text'])}</li>" for l in r.get("transcript", []))
+            yield f"""<details class="scenario {'ok' if r['pass'] else 'bad'}"><summary>{pill(r['pass'])} <code>{e(r['id'])}</code> <span class="num">{r['seconds']:.0f} s · route {e(r.get('route'))} · extraction {acc.get('score','–')}%</span><span class="doc">{e(r['title'])}: {e(r['tests'])}</span></summary>{fails}{notes}<div class="judge">{jrow}</div>{worst_html}<div class="checks">{checks}</div><ol class="turns convo">{convo}</ol></details>"""
+    scen_html = "".join(scen_rows()) if scen else "<p class='muted'>No scenario report found. Run <code>evals/run_scenario_evals.py</code> (about 20 minutes for all twelve).</p>"
     live_html = "".join(live_rows()) if live else "<p class='muted'>No live report found. Start the local server and run <code>evals/run_live_evals.py</code>.</p>"
 
     return f"""<title>Claim Agent Release Report</title>
@@ -136,7 +158,9 @@ code{{font-family:var(--mono);font-size:12.5px;background:var(--accent-soft);col
 details.scenario{{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px;border-left:4px solid var(--ok)}}details.scenario.bad{{border-left-color:var(--bad)}}
 summary{{cursor:pointer;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:14px}}summary .doc{{flex-basis:100%;color:var(--muted);font-size:12.5px}}
 ol.turns{{margin:10px 0 2px;padding-left:22px;font-size:13.5px}}ol.turns li{{margin:4px 0;color:var(--ink)}}ul.fails{{margin:8px 0;padding-left:20px;color:var(--bad);font-size:13.5px}}
-.judge{{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;margin:8px 0}}.judge b{{color:var(--muted);font-weight:600}}
+.judge{{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;margin:8px 0}}.tile.metric{{border-top-color:var(--accent)}}
+.checks{{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}}.chk{{font-size:11px;font-weight:600;padding:2px 7px;border-radius:999px}}.chk.ok{{background:var(--ok-soft);color:var(--ok)}}.chk.bad{{background:var(--bad-soft);color:var(--bad)}}
+ol.convo li.claimant{{color:var(--muted)}}ol.convo li b{{font-weight:600;margin-right:4px}}.judge b{{color:var(--muted);font-weight:600}}
 footer{{margin-top:34px;border-top:1px solid var(--line);padding-top:12px;font-size:12.5px;color:var(--muted)}}
 </style>
 <div class="wrap">
@@ -148,17 +172,99 @@ footer{{margin-top:34px;border-top:1px solid var(--line);padding-top:12px;font-s
 <h2>Server health at report time</h2>{health_html}
 <h2>Rules</h2><p class="muted">{rules['ran']} deterministic tests, no network.</p>{rules_html}
 <h2>Notes pipeline</h2><p class="muted">Transcript fixtures through the real extractor. Each case names the incident it guards.</p>{pipe_html}
+<h2>End-to-end scenarios</h2><p class="muted">A Gemini-simulated claimant with a persona and ground truth talks to the real agent. Pass/fail is deterministic (route, closing, checklist coverage, forbidden questions, guards, latency). Extraction accuracy and the judge rubric are tracked metrics. Expand a scenario for the whole conversation.</p>{scen_html}
 <h2>Live conversation</h2><p class="muted">Scripted claimant against the real server and Gemini Live. Expand a scenario for the agent's exact lines. Live results vary run to run; re-run a single red scenario before treating it as a regression.</p>{live_html}
 <footer>Generated by <code>evals/render_report.py</code> from the newest JSON reports in <code>evals/reports/</code>. Rules are re-run at render time; pipeline and live layers are read from their reports.</footer>
 </div>
 """
 
 
+STYLE_HISTORY = """
+.runs th,.runs td{white-space:nowrap}.runs td.story{white-space:normal}
+.log h3{font-size:15px;margin:18px 0 4px;font-weight:600}.log p{margin:4px 0;font-size:13.5px;max-width:80ch}.log b{color:var(--muted);font-weight:600}
+.kind{font-size:11px;font-weight:700;letter-spacing:.04em;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+"""
+
+
+def load_reports():
+    """Every JSON report, newest first, with the summary numbers the index shows."""
+    rows = []
+    for f in sorted(REPORTS.glob("*-*.json"), reverse=True):
+        kind, _, stamp = f.stem.partition("-")
+        try: data = json.loads(f.read_text())
+        except Exception: continue
+        meta = next((r for r in data if isinstance(r, dict) and r.get("_meta")), {})
+        recs = [r for r in data if isinstance(r, dict) and not r.get("_meta")]
+        if not recs: continue
+        passed = sum(1 for r in recs if r.get("pass")); total = len(recs)
+        accs = [r["extraction"]["score"] for r in recs if r.get("extraction")]
+        jk = ("warmth", "no_repetition", "collected_what_caller_had", "no_advice", "efficiency")
+        jv = [r["judge"][k] for r in recs for k in jk if isinstance((r.get("judge") or {}).get(k), int)]
+        when = datetime.datetime.strptime(stamp, "%Y%m%d-%H%M%S").strftime("%Y-%m-%d %H:%M") if len(stamp) == 15 else stamp
+        rows.append({"file": f.name, "kind": kind, "when": when, "passed": passed, "total": total, "ids": [r.get("id") or r.get("scenario") or r.get("case") for r in recs],
+                     "acc": (sum(accs) // len(accs)) if accs else None, "judge": round(sum(jv) / len(jv), 1) if jv else None, "git": meta.get("git_rev"), "recs": recs})
+    return rows
+
+
+def runlog_html():
+    path = ROOT / "evals" / "RUNLOG.md"
+    if not path.exists(): return "<p class='muted'>No run log yet.</p>"
+    out = []
+    for line in path.read_text().splitlines():
+        if line.startswith("## "): out.append(f"<h3>{e(line[3:])}</h3>")
+        elif line.startswith("# ") or not line.strip(): continue
+        else:
+            t = e(line); 
+            import re as _re
+            t = _re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t); t = _re.sub(r"`(.+?)`", r"<code>\1</code>", t)
+            out.append(f"<p>{t}</p>")
+    return "".join(out)
+
+
+def run_page(row):
+    """A standalone page for one run, reusing the scenario/live renderers."""
+    kind = row["kind"]; recs = row["recs"]
+    if kind == "scenario": page = render({"ran": 0, "failed": []}, None, None, None, None, recs, row["file"], None, "")
+    elif kind == "live": page = render({"ran": 0, "failed": []}, None, None, recs, row["file"], None, None, None, "")
+    else: page = render({"ran": 0, "failed": []}, recs, row["file"], None, None, None, None, None, "")
+    page = page.replace("<title>Claim Agent Release Report</title>", f"<title>Run {e(row['when'])} {e(kind)}</title>")
+    page = page.replace("<h1>Release report</h1>", f"<h1>{e(kind.capitalize())} run · {e(row['when'])}</h1><p class='muted'><a href='index.html'>← all runs</a> · {e(row['file'])}{' · ' + e(row['git']) if row['git'] else ''}</p>")
+    # Standalone file: give it a proper document head (the index page gets one from the publisher, these do not).
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body style="margin:0">' + page + "</body></html>"
+
+
+def build_history():
+    import re as _re
+    css = _re.search(r"<style>(.*?)</style>", render({"ran": 0, "failed": []}, None, None, None, None, None, None, None, ""), _re.S).group(1)
+    rows = load_reports()
+    for row in rows:
+        (REPORTS / f"run-{row['file'][:-5]}.html").write_text(run_page(row))
+    trs = "".join(f"<tr><td class='num'>{e(r['when'])}</td><td><span class='kind'>{e(r['kind'])}</span></td><td>{pill(r['passed'] == r['total'], str(r['passed']) + '/' + str(r['total']))}</td>"
+                  f"<td class='num'>{str(r['acc']) + '%' if r['acc'] is not None else '–'}</td><td class='num'>{r['judge'] if r['judge'] is not None else '–'}</td><td class='num'>{e(r['git'] or '–')}</td>"
+                  f"<td class='story'><a href='run-{e(r['file'][:-5])}.html'>open</a> · {e(', '.join(x for x in r['ids'] if x)[:90])}</td></tr>" for r in rows)
+    page = f"""<title>Claim Agent Eval History</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>{css}{STYLE_HISTORY}</style>
+<div class="wrap">
+<div class="eyebrow">Auto claim voice agent</div><h1>Evaluation history</h1>
+<p class="muted">Every recorded run, newest first, with the story of what each one found and what changed. Click a run for its full report and transcripts.</p>
+<h2>Runs</h2><div class="tbl"><table class="runs"><tr><th>When</th><th>Layer</th><th>Result</th><th>Extraction</th><th>Judge</th><th>Code</th><th>Report</th></tr>{trs}</table></div>
+<h2>Run log: findings and fixes</h2><div class="log">{runlog_html()}</div>
+<footer>Generated by <code>evals/render_report.py --history</code> from <code>evals/reports/*.json</code> and <code>evals/RUNLOG.md</code>.</footer>
+</div>"""
+    (REPORTS / "index.html").write_text(page)
+    return len(rows)
+
+
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--base", default="http://127.0.0.1:4177"); ap.add_argument("--out", default=str(REPORTS / "report.html"))
+    ap.add_argument("--history", action="store_true", help="also rebuild evals/reports/index.html and one page per run")
     a = ap.parse_args()
-    pipeline, pn = latest("pipeline", "case"); live, ln = latest("live", "scenario")
-    page = render(run_rules(), pipeline, pn, live, ln, health(a.base), a.base)
+    if a.history:
+        n = build_history(); print(f"history: {REPORTS / 'index.html'} ({n} runs)")
+    pipeline, pn = latest("pipeline", "case"); live, ln = latest("live", "scenario"); scen, sn = latest("scenario", "id")
+    page = render(run_rules(), pipeline, pn, live, ln, scen, sn, health(a.base), a.base)
     out = pathlib.Path(a.out); out.parent.mkdir(exist_ok=True); out.write_text(page)
     print(f"report: {out}")
 

@@ -1,0 +1,34 @@
+{
+  "id": "out_of_scope_home",
+  "title": "Non-auto loss, burst pipe at home",
+  "tests": "Scope gate: declined kindly, no facts collected, offers to take an auto claim.",
+  "persona": {
+    "style": "stressed homeowner",
+    "volunteer_up_front": true
+  },
+  "facts": {
+    "policyholder": "Jordan Lee",
+    "policy_number": "AUTO-90210",
+    "vehicle": "2013 Toyota Sienna",
+    "what_happened": "a pipe burst under my kitchen sink at 773 Cardinal Lane and flooded the kitchen floor; nothing to do with the car",
+    "when": "last night",
+    "injuries": "no",
+    "other_party": "none",
+    "has_photos": "yes",
+    "police_report": "no",
+    "contact": "email"
+  },
+  "expect": {
+    "route": "out_of_scope",
+    "closes": false,
+    "declines": true,
+    "should_ask": [],
+    "should_not_ask": [
+      "photos",
+      "police",
+      "other_driver_exchange"
+    ],
+    "camera_request": false
+  },
+  "truth": {}
+}

@@ -1,0 +1,48 @@
+{
+  "id": "vandalism_keyed",
+  "title": "Vandalism, keyed in a parking lot",
+  "tests": "Police report matters; no other driver; photos matter.",
+  "persona": {
+    "style": "annoyed, direct",
+    "volunteer_up_front": false
+  },
+  "facts": {
+    "policyholder": "Jordan Lee",
+    "policy_number": "AUTO-90210",
+    "vehicle": "2013 Toyota Sienna",
+    "what_happened": "someone keyed the whole driver's side of my van while it was parked at the Safeway on Coleman Ave in San Jose",
+    "when": "sometime yesterday afternoon while I was shopping",
+    "injuries": "no",
+    "other_party": "no idea who did it",
+    "has_photos": "yes, I have photos on my phone",
+    "police_report": "I filed one online last night, I have a reference number",
+    "contact": "phone"
+  },
+  "expect": {
+    "route": "policy_review",
+    "closes": true,
+    "should_ask": [
+      "photos",
+      "police"
+    ],
+    "should_not_ask": [
+      "other_driver_exchange"
+    ],
+    "camera_request": false
+  },
+  "truth": {
+    "date_of_loss": "2026-10-15",
+    "location_keywords": [
+      "safeway",
+      "coleman"
+    ],
+    "cause_keywords": [
+      "key",
+      "vandal",
+      "scratch"
+    ],
+    "injury_status": "absent",
+    "other_party": "unknown",
+    "contact_method": "phone"
+  }
+}

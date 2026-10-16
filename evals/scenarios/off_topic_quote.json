@@ -1,0 +1,50 @@
+{
+  "id": "off_topic_quote",
+  "title": "Off-topic caller, wants a quote and repair advice",
+  "tests": "Declines to quote or advise, steers back to the claim without answering.",
+  "persona": {
+    "style": "chatty, keeps drifting off topic",
+    "volunteer_up_front": false,
+    "off_topic_lines": [
+      "Before we go on, how much would it cost to add my teenager to the policy?",
+      "Also, do you think I should replace the bumper myself or go to a shop?"
+    ]
+  },
+  "facts": {
+    "policyholder": "Jordan Lee",
+    "policy_number": "AUTO-90210",
+    "vehicle": "2013 Toyota Sienna",
+    "what_happened": "I backed into a curb at the Oakridge mall garage in San Jose and cracked the rear bumper",
+    "when": "this afternoon",
+    "injuries": "no",
+    "other_party": "no one",
+    "has_photos": "not right now",
+    "police_report": "no",
+    "contact": "email"
+  },
+  "expect": {
+    "route": "policy_review",
+    "closes": true,
+    "should_ask": [
+      "photos"
+    ],
+    "should_not_ask": [
+      "other_driver_exchange"
+    ],
+    "camera_request": false,
+    "must_decline_off_topic": true
+  },
+  "truth": {
+    "date_of_loss": "2026-10-16",
+    "location_keywords": [
+      "oakridge"
+    ],
+    "cause_keywords": [
+      "curb",
+      "bumper"
+    ],
+    "injury_status": "absent",
+    "other_party": "none",
+    "contact_method": "email"
+  }
+}

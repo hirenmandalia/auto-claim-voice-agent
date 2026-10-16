@@ -73,6 +73,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding-top:14px;font-si
     <li><a href="#data">7. Data handling</a></li>
     <li><div class="sub">Verification</div></li>
     <li><a href="#evals">8. Evaluation framework</a></li>
+    <li><a href="#scenarios">8b. Claim scenarios</a></li>
     <li><a href="#incidents">9. Incident map</a></li>
     <li><a href="#manual">10. Phone checklist</a></li>
     <li><a href="#config">11. Settings</a></li>
@@ -116,9 +117,15 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding-top:14px;font-si
     <div class="rule"><h3><span class="t">Never restates, never re-asks</span><span><span class="chip prompt">Prompt</span> <span class="chip code">Code</span> <span class="chip eval">Eval</span></span></h3>
       <p>Each time it speaks it says something new. Every notes result hands it an explicit list of what is already known: date, location, what happened, contact preference, name, policy. To confirm one, it states the fact and asks "is that right?" rather than asking fresh.</p>
       <div class="how"><b>Enforced:</b> <code>already_known_do_not_ask_again</code> in every <code>sync_claim_packet</code> result. Rules test <code>test_already_known_list_is_populated</code>; live eval flags "when did it happen" after the date was given.</div></div>
-    <div class="rule"><h3><span class="t">Asks only for checklist items</span><span><span class="chip prompt">Prompt</span> <span class="chip eval">Eval</span></span></h3>
-      <p>No repair estimates, receipts, medical records, mileage, or anything not on the checklist. If you answered an item before being asked, it is not asked.</p>
-      <div class="how"><b>Enforced:</b> prompt rule; live eval <code>full_call_closes</code> fails on any off-checklist request.</div></div>
+    <div class="rule"><h3><span class="t">Asks only for checklist items</span><span><span class="chip code">Code</span> <span class="chip prompt">Prompt</span> <span class="chip eval">Eval</span></span></h3>
+      <p>No repair estimates, receipts, invoices, medical records, mileage, or anything not on the checklist. If you answered an item before being asked, it is not asked. When you have an item, it is collected on the spot, on camera where possible, never deferred to "later" or "the app".</p>
+      <div class="how"><b>Enforced:</b> prompt rules, plus the <code>OFF_CHECKLIST_ASK</code> guard that cuts such a question mid-sentence and steers back. Live eval <code>full_call_closes</code> and every scenario fail on an off-checklist request.</div></div>
+    <div class="rule"><h3><span class="t">Never invents status</span><span><span class="chip code">Code</span> <span class="chip prompt">Prompt</span> <span class="chip eval">Eval</span></span></h3>
+      <p>Before the claim may close, the agent never says the packet was submitted, sent for review, that a reviewer will look at it, or that someone will get in touch. Asked "are we done?" too early, it says it is finishing its notes and will confirm in a moment. Nothing is submitted until the caller taps Review &amp; submit.</p>
+      <div class="how"><b>Enforced:</b> the <code>PREMATURE_CLOSE</code> guard, active only while closing is not yet allowed. Observed before the fix: "your claim packet is now being submitted for a human review." Live eval probes with "Are we done here?" before the closing.</div></div>
+    <div class="rule"><h3><span class="t">Never speaks a silence placeholder</span><span><span class="chip code">Code</span></span></h3>
+      <p>"No speech", "silence", or similar transcription placeholders are never spoken or shown, on either side, and never trigger a reply.</p>
+      <div class="how"><b>Enforced:</b> the <code>SILENCE_PLACEHOLDER</code> guard. This one deliberately does not prompt the model again, because a prompt is what produced the line.</div></div>
     <div class="rule"><h3><span class="t">Never promises coverage</span><span><span class="chip prompt">Prompt</span></span></h3>
       <p>Policy details describe what is on the policy, not what will be paid. No promises of coverage, payment, liability, benefits, or approval.</p>
       <div class="how"><b>Enforced:</b> prompt rule from the original demo, kept verbatim.</div></div>
@@ -152,7 +159,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding-top:14px;font-si
   <p class="why">The call has three phases in a fixed order, and the closing line is gated by code, not by the model's judgement.</p>
   <div class="phases">
     <div class="phase"><div class="n">Phase 1</div><h3>Core facts</h3><p>Six fields. Name and policy come from the app.</p><ul><li>What happened</li><li>When</li><li>Where</li><li>Injuries</li><li>Phone or email</li></ul></div>
-    <div class="phase"><div class="n">Phase 2</div><h3>Checklist</h3><p>One item per turn, each asked once. "I don't have it" is a complete answer.</p><ul><li>Photos of the damage (offers the camera)</li><li>Police report or exchange form</li><li>Other driver and witness details</li></ul></div>
+    <div class="phase"><div class="n">Phase 2</div><h3>Checklist, by kind of loss</h3><p>One item per turn, each asked once. "I don't have it" is a complete answer. The list depends on what happened, read deterministically from the caller's words.</p><ul><li>Glass, weather, animal strike, single vehicle: photos only</li><li>Vandalism, theft: photos, police report</li><li>Two-party collision, hit and run: photos, police report, other driver and witnesses</li></ul></div>
     <div class="phase"><div class="n">Phase 3</div><h3>Closing</h3><p>Only when the server says <code>closing_allowed</code>. Nothing is asked after it.</p><ul><li>Short summary</li><li>The closing line</li><li>Review &amp; submit appears</li></ul></div>
   </div>
   <div class="rules" style="margin-top:12px">
@@ -160,8 +167,17 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding-top:14px;font-si
       <p>A checklist item counts as covered once either side has mentioned it, so volunteering "no police report" before being asked is enough. Documents and third-party details can never block the close; only a missing core fact can. The claim does not close early, and it cannot get stuck.</p>
       <div class="said">"Your claim packet is ready. You can review it in the app, and once you submit it, an adjuster will get started on it."</div>
       <div class="how"><b>Enforced:</b> <code>closing_allowed</code> in <code>summarize_workflow_for_voice</code>, computed from the six core fields and transcript keywords; the validator drops document-type items from blocking facts. Observed before the fix: a closing followed by "do you have a repair estimate?", and a call that never closed because "other driver's insurance details" stayed listed as missing. Rules tests in <code>ClosingGate</code>; pipeline fixture <code>other_driver_fled_closes</code>; live eval <code>full_call_closes</code>.</div></div>
-    <div class="rule"><h3><span class="t">The app flips to "closed" the moment the line is spoken</span><span><span class="chip code">Code</span> <span class="chip eval">Eval</span></span></h3>
-      <p>Review &amp; submit appears as soon as the closing line is said, without waiting for another notes cycle.</p>
+    <div class="rule"><h3><span class="t">An injured caller gets a closing too</span><span><span class="chip code">Code</span> <span class="chip prompt">Prompt</span> <span class="chip eval">Eval</span></span></h3>
+      <p>When someone is hurt the closing adds that the claim is flagged for urgent human review and that they should get medical care, then the standard closing line. The agent gives that medical reminder once, with no care instructions and no questions about who was treated; those details go to the adjuster's packet.</p>
+      <div class="how"><b>Enforced:</b> the escalation branch of the closing rule and the closing prompt; injury follow-ups are hidden from the agent's open items once injury status is known. Observed before the fix: an injured caller asked "are you done?" and heard "finishing my notes" twice with no closing.</div></div>
+    <div class="rule"><h3><span class="t">What the caller has is collected before the close</span><span><span class="chip code">Code</span> <span class="chip prompt">Prompt</span> <span class="chip eval">Eval</span></span></h3>
+      <p>If the caller says they have photos or the other driver's card, the claim cannot close until the agent has asked to see it on camera. "I can't show it right now" is then a fine answer; silently skipping it is not.</p>
+      <div class="how"><b>Enforced:</b> <code>offered_but_not_yet_collected</code> in the packet summary blocks <code>closing_allowed</code> until a camera request appears in the agent's lines. Observed in the first scenario run: the "volunteers everything" caller mentioned photos and a card and the agent closed in two turns. Rules test <code>test_offered_photos_block_closing_until_asked_to_show</code>; scenario <code>volunteers_everything</code>.</div></div>
+    <div class="rule"><h3><span class="t">A declined claim shows as out of scope</span><span><span class="chip code">Code</span> <span class="chip eval">Eval</span></span></h3>
+      <p>When the agent declines a non-auto loss, the route becomes "Auto claims only" even though no facts were collected, so the app never shows a declined call as "in progress".</p>
+      <div class="how"><b>Enforced:</b> <code>SCOPE_DECLINE</code> on the agent's line sets the route; the classifier-based gate still covers the case where facts were collected first. Scenario <code>out_of_scope_home</code>.</div></div>
+    <div class="rule"><h3><span class="t">The app flips to "closed" the moment the line is spoken, and stays closed</span><span><span class="chip code">Code</span> <span class="chip eval">Eval</span></span></h3>
+      <p>Review &amp; submit appears as soon as the closing line is said, without waiting for another notes cycle, and a later loose end in the notes cannot hide it again.</p>
       <div class="how"><b>Enforced:</b> the server pushes state when an agent turn matches the closing phrasing. Found by the first run of the eval suite. Live eval checks <code>state.closed</code>.</div></div>
     <div class="rule"><h3><span class="t">A natural beat while the notes finish</span><span><span class="chip prompt">Prompt</span> <span class="chip code">Code</span></span></h3>
       <p>When the last item is covered but the notes are still being finalized, the agent says it is finishing up its notes and goes quiet; the phone plays soft keystrokes and shows "taking notes". The closing follows when the notes land. The re-ask is held during this window.</p>
@@ -224,7 +240,8 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding-top:14px;font-si
     <tr><th>Layer</th><th>Runs against</th><th>Time</th><th>What it proves</th></tr>
     <tr><td><b>Rules</b><br><code>tests/test_demo_rules.py</code></td><td>Nothing; pure code</td><td>under 1 s</td><td>Escalation logic, checklist filtering, contact preference, closing gate, already-known list, language pin, tool scheduling, sketch off, barge-in default, darkness metric, meta-talk guard, LAN access, account context. 80 tests with the original demo's suites.</td></tr>
     <tr><td><b>Notes pipeline</b><br><code>evals/run_pipeline_evals.py</code></td><td>The real extractor (Gemini Flash)</td><td>about 1 min</td><td>Seven transcript fixtures: route, missing facts, contact and date capture, whether the claim can close. Each fixture names the incident it guards.</td></tr>
-    <tr><td><b>Live conversation</b><br><code>evals/run_live_evals.py</code></td><td>The real server and Gemini Live over the WebSocket, driven by a scripted claimant</td><td>about 6 min</td><td>Six scenarios, below. <code>--judge</code> adds a Gemini-scored tone rubric: warmth, conciseness, no repetition, natural flow.</td></tr>
+    <tr><td><b>Live conversation</b><br><code>evals/run_live_evals.py</code></td><td>The real server and Gemini Live over the WebSocket, driven by a scripted claimant</td><td>about 6 min</td><td>Eight mechanics scenarios, below. <code>--judge</code> adds a Gemini-scored tone rubric.</td></tr>
+    <tr><td><b>End-to-end scenarios</b><br><code>evals/run_scenario_evals.py</code></td><td>The real agent, with a Gemini-simulated claimant playing a persona from ground-truth facts</td><td>about 20 min</td><td>Twelve claim situations, next section. Deterministic pass/fail plus two tracked metrics: extraction accuracy against the ground truth, and a judge rubric. Run with <code>./run_evals.sh full</code>.</td></tr>
   </table></div>
   <div class="tbl" style="margin-top:12px"><table>
     <tr><th>Live scenario</th><th>Pass criteria</th></tr>
@@ -234,9 +251,33 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding-top:14px;font-si
     <tr><td><code>quiet_reask</code></td><td>After a first-reply question and silence: exactly one re-ask, at 10 s or later, in different words, then nothing more</td></tr>
     <tr><td><code>voice_cancels_reask</code></td><td>Mic activity inside the window cancels the re-ask; the agent answers the claimant's words instead</td></tr>
     <tr><td><code>dark_camera</code></td><td>Four dark frames produce the lighting event and a spoken request for light; bright frames clear it</td></tr>
+    <tr><td><code>collects_other_driver_on_camera</code></td><td>When the claimant has the other driver's card, the agent asks to see it on camera and the phone receives the open-camera signal; never "provide it in the app"</td></tr>
+    <tr><td><code>injury_escalates_and_closes</code></td><td>A reported injury escalates the route, the agent gives one medical reminder, still works the checklist, and closes with the urgent-review wording</td></tr>
     <tr><td>every scenario</td><td>No mention of models, prompts, or "demo"; no request for name or policy number; no non-Latin script</td></tr>
   </table></div>
   <div class="note" style="margin-top:12px">Gemini Live is not deterministic. A single red live scenario is worth one re-run with <code>--only &lt;name&gt;</code> before it is treated as a regression. The rules and pipeline layers are stable.</div>
+</section>
+
+<section id="scenarios">
+  <h2>8b. End-to-end claim scenarios</h2>
+  <p class="why">Each scenario is a persona with ground-truth facts, played against the real agent by a simulated claimant that answers only from those facts. A scenario passes on deterministic checks; the two metrics beside it are tracked for trend, not gated. These are the claim types the demo must handle, and the first run is what tells us where the checklist is still one-size-fits-all.</p>
+  <div class="tbl"><table>
+    <tr><th>Scenario</th><th>What must happen</th><th>What must not happen</th></tr>
+    <tr><td>Two-party collision, cooperative driver</td><td>Full checklist; other driver's card and plate collected on camera</td><td>Deferring the details to "the app"</td></tr>
+    <tr><td>Hit and run</td><td>Photos and police report raised; closes cleanly</td><td>Pressing for details of a driver who fled</td></tr>
+    <tr><td>Single vehicle, hit a pole</td><td>Photos raised; closes</td><td>Any question about exchanging information with another driver</td></tr>
+    <tr><td colspan="3" class="why">First full run, before the sub-type checklist: 3 of 12 passed. Deer, glass and hail failed on police or other-driver questions; four scenarios looped because the simulated caller had nothing to show; a declined home claim was still routed as "in progress"; the injured caller was asked about treatment. Each of those is now a rule above.</td></tr>
+    <tr><td>Glass only, rock chip</td><td>Short call, at most four questions, closes</td><td>Police report or other-driver questions</td></tr>
+    <tr><td>Vandalism, keyed</td><td>Photos and police report raised</td><td>Other-driver questions</td></tr>
+    <tr><td>Weather, hail</td><td>Photos raised; closes</td><td>Police report or other-driver questions</td></tr>
+    <tr><td>Animal strike, deer</td><td>Cause captured as an animal strike; photos raised</td><td>Other-driver questions</td></tr>
+    <tr><td>Injury during a collision</td><td>Escalates; one medical reminder; urgent-review closing</td><td>Care instructions, repeated medical questions</td></tr>
+    <tr><td>Non-auto loss, burst pipe</td><td>Declined kindly; route out of scope; offers to take an auto claim</td><td>Collecting any facts about the home loss; a closing</td></tr>
+    <tr><td>Off-topic caller, wants a quote</td><td>Declines and steers back; claim still completes</td><td>A price, a premium, or repair advice</td></tr>
+    <tr><td>Volunteers everything up front</td><td>At most three questions; closes</td><td>Re-asking the date, location, contact, or police report</td></tr>
+    <tr><td>Other driver's card in hand</td><td>Camera opened for the card; details pinned</td><td>Deferring the card</td></tr>
+  </table></div>
+  <div class="thresholds" style="margin-top:12px"><div class="kv"><b>Extraction accuracy</b><span>date, location, cause, injuries, contact, other party vs ground truth, per scenario and averaged</span></div><div class="kv"><b>Judge rubric, 1 to 5</b><span>warmth, no repetition, collected what the caller had, no advice, efficiency</span></div><div class="kv"><b>Latency</b><span>first words after each claimant turn; a reply over 5 s fails</span></div></div>
 </section>
 
 <section id="incidents">
@@ -255,6 +296,10 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding-top:14px;font-si
     <tr><td>Dark photo not flagged</td><td>Threshold tuned for black, not gain-boosted grey; app logs were suppressed</td><td>rules: darkness metric; live: <code>dark_camera</code></td></tr>
     <tr><td>20 to 30 s of silence before each reply</td><td>Note sync blocked the reply on the pipeline</td><td>live: first words within 4 s</td></tr>
     <tr><td>Only the first photo pinned</td><td>Prompt said "first time you see each new thing"</td><td>prompt rule; manual phone check</td></tr>
+    <tr><td>"Your packet is being submitted for human review" before the close</td><td>Model invented status when asked "are we done?"</td><td>rules: premature-close guard; live: "are we done?" probe</td></tr>
+    <tr><td>Injured caller never got a closing</td><td>Escalation line consumed the one-shot closing prompt</td><td>live: <code>injury_escalates_and_closes</code>; scenario: injury collision</td></tr>
+    <tr><td>Asked for receipts and estimates</td><td>Model habit survived the prompt rule</td><td>rules: off-checklist guard; scenarios flag any such question</td></tr>
+    <tr><td>Said "No speech" aloud</td><td>Model verbalised silence after a prompt</td><td>rules: silence-placeholder guard</td></tr>
     <tr><td>Phone could not connect</td><td>Server started from the preview pane was stopped with it</td><td>manual: start with <code>run_phone.sh</code></td></tr>
   </table></div>
 </section>

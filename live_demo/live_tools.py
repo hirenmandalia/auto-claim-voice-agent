@@ -520,7 +520,11 @@ def document_addressed(item: str, agent_text: str) -> bool:
     return False
 
 
-def summarize_workflow_for_voice(workflow: dict[str, Any], agent_text: str = "") -> dict[str, Any]:
+OFFERED = re.compile(r"\bi (have|took|got|'ve got|do have)\b[^.]{0,40}\b(photos?|pictures?|their (insurance )?card|insurance card|license plate|plate number|the other driver'?s)", re.I)
+SHOW_ASK = re.compile(r"show me|hold (it|that|the card|them) up|(turn on|use|point) (the|your) camera|on (the|your) camera", re.I)
+
+
+def summarize_workflow_for_voice(workflow: dict[str, Any], agent_text: str = "", claimant_text: str = "") -> dict[str, Any]:
     """Compact the ADK graph output into what the voice agent needs to hear."""
 
     packet = workflow["claim_intake_packet"]
@@ -550,7 +554,11 @@ def summarize_workflow_for_voice(workflow: dict[str, Any], agent_text: str = "")
         open_items = [i for i in open_items if not re.search(r"injur|hurt|treat|medical|hospital|doctor", str(i), re.I)]
     core_keys = {"policyholder_name", "policy_number", "contact_method", "date_of_loss", "loss_location", "loss_description"}
     core_open = [i for i in open_items if i in core_keys or re.search(r"\b(date|when|location|where|what happened|cause|describ)", str(i), re.I)]
-    closing_allowed = not core_open and not not_yet_asked
+    # The claimant said they HAVE photos or the other driver's card: the agent must ask to see them (camera) before closing.
+    offered_not_collected = []
+    if claimant_text and OFFERED.search(claimant_text) and not SHOW_ASK.search(agent_text):
+        offered_not_collected = ["the photos or the other driver's card the claimant said they have: ask them to show it on camera now"]
+    closing_allowed = not core_open and not not_yet_asked and not offered_not_collected
     claim = workflow.get("normalized_claim", {}) or {}
     def known(key):
         v = str(claim.get(key, "") or "").strip()
@@ -570,6 +578,7 @@ def summarize_workflow_for_voice(workflow: dict[str, Any], agent_text: str = "")
         "open_items": open_items,
         "open_documents": outstanding_docs[:3],
         "documents_not_yet_asked_about": not_yet_asked,
+        "offered_but_not_yet_collected": offered_not_collected,
         "closing_allowed": closing_allowed,
         "closing_rule": (("Someone was hurt, so this claim is flagged for urgent human review. Close now: say in one warm sentence "
                           "that you've flagged it for urgent review because of the injury and that they should get medical care if "

@@ -1,0 +1,47 @@
+{
+  "id": "two_party_collision_cooperative",
+  "title": "Two-party collision, other driver cooperative",
+  "tests": "Full checklist; the other driver's details are collected on camera, not deferred.",
+  "persona": {
+    "style": "calm, concise, answers only what is asked",
+    "volunteer_up_front": false
+  },
+  "facts": {
+    "policyholder": "Jordan Lee",
+    "policy_number": "AUTO-90210",
+    "vehicle": "2013 Toyota Sienna",
+    "what_happened": "another car ran a red light and hit the passenger side of my van at the intersection of Coleman Ave and Taylor St in San Jose",
+    "when": "about an hour ago",
+    "injuries": "no, everyone is fine",
+    "other_party": "yes, the other driver stayed; I have a photo of their insurance card and their plate number",
+    "has_photos": "yes, I took photos of the damage",
+    "police_report": "yes, the police came and gave me a report number, 26-04471",
+    "contact": "email"
+  },
+  "expect": {
+    "route": "policy_review",
+    "closes": true,
+    "should_ask": [
+      "photos",
+      "police",
+      "other_driver"
+    ],
+    "should_not_ask": [],
+    "camera_request": true
+  },
+  "truth": {
+    "date_of_loss": "2026-10-16",
+    "location_keywords": [
+      "coleman",
+      "taylor"
+    ],
+    "cause_keywords": [
+      "red light",
+      "ran",
+      "hit"
+    ],
+    "injury_status": "absent",
+    "other_party": "known",
+    "contact_method": "email"
+  }
+}

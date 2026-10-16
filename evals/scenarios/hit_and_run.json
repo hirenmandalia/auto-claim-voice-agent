@@ -1,0 +1,46 @@
+{
+  "id": "hit_and_run",
+  "title": "Hit and run",
+  "tests": "Other driver unknown; police report encouraged; still closes cleanly.",
+  "persona": {
+    "style": "a bit shaken, short answers",
+    "volunteer_up_front": false
+  },
+  "facts": {
+    "policyholder": "Jordan Lee",
+    "policy_number": "AUTO-90210",
+    "vehicle": "2013 Toyota Sienna",
+    "what_happened": "someone rear-ended me at the light on Coleman Ave in San Jose and drove off before I could get anything",
+    "when": "this morning around 8",
+    "injuries": "no, I'm okay",
+    "other_party": "no idea who it was, they fled",
+    "has_photos": "not yet, I'm not at the car",
+    "police_report": "no, I didn't call the police",
+    "contact": "phone"
+  },
+  "expect": {
+    "route": "policy_review",
+    "closes": true,
+    "should_ask": [
+      "photos",
+      "police"
+    ],
+    "should_not_ask": [],
+    "camera_request": false
+  },
+  "truth": {
+    "date_of_loss": "2026-10-16",
+    "location_keywords": [
+      "coleman"
+    ],
+    "cause_keywords": [
+      "rear",
+      "drove off",
+      "fled",
+      "hit"
+    ],
+    "injury_status": "absent",
+    "other_party": "fled",
+    "contact_method": "phone"
+  }
+}

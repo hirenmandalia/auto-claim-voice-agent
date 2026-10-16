@@ -373,7 +373,7 @@ def apply_coverage_and_evidence_rules(
             "collect_info",
         )
 
-    for document, reason in TYPE_REQUIRED_DOCS.get(classification.claim_type, TYPE_REQUIRED_DOCS["other"]):
+    for document, reason in required_docs_for(claim, classification):
         if not _document_provided(document, claim):
             add(
                 "DOC-001",
@@ -478,6 +478,56 @@ def apply_coverage_and_evidence_rules(
     return decision.model_dump(exclude_none=True)
 
 
+AUTO_SUBTYPE_PATTERNS = [
+    ("glass", r"windshield|windscreen|rock chip|glass|side window|rear window"),
+    ("weather", r"\bhail|storm|flood|tornado|lightning|high winds?|tree (fell|branch|limb)|fallen tree|wind damage"),
+    ("animal", r"\bdeer|\banimal|coyote|\bdog\b|\belk\b|raccoon|hit a (deer|dog|cat)"),
+    ("vandalism", r"\bkey(ed|ing)?\b|vandal|graffiti|slash|smashed (my|the) window|broke(n)? into|spray.?paint"),
+    ("theft", r"\bstolen|\btheft|\bstole\b"),
+    ("hit_and_run", r"hit and run|hit-and-run|drove off|fled|left the scene|took off|didn't stop|did not stop"),
+    ("single_vehicle", r"\b(pole|curb|kerb|wall|fence|post|ditch|barrier|guardrail|bollard|pillar|concrete|tree)\b"),
+]
+OTHER_VEHICLE_WORDS = r"other (driver|car|vehicle|party)|another (car|vehicle|driver)|rear.?ended|t-?boned|sideswip|ran (a|the) (red|stop)|collided with (a|the) (car|vehicle|truck|suv|sedan|pickup)|(car|truck|suv|sedan|pickup|van) (hit|struck|clipped|backed into) (me|us|my)"
+
+
+def auto_subtype(claim: ClaimNarrative) -> str:
+    """Deterministic read of what kind of auto loss this is, from the claimant's own words."""
+    text = " ".join(filter(None, [claim.loss_description, claim.raw_narrative_summary, claim.loss_cause if hasattr(claim, "loss_cause") else ""])).lower()
+    other_vehicle = bool(re.search(OTHER_VEHICLE_WORDS, text))
+    for name, pattern in AUTO_SUBTYPE_PATTERNS:
+        if re.search(pattern, text):
+            if name == "single_vehicle" and other_vehicle:
+                continue
+            if name == "hit_and_run":
+                return name
+            return name
+    return "two_party" if other_vehicle else "unknown"
+
+
+# Which checklist items make sense for each kind of auto loss. Anything else must not be asked.
+AUTO_SUBTYPE_DOCS = {
+    "glass": ["Photos of vehicles and scene"],
+    "weather": ["Photos of vehicles and scene"],
+    "animal": ["Photos of vehicles and scene"],
+    "single_vehicle": ["Photos of vehicles and scene"],
+    "vandalism": ["Photos of vehicles and scene", "Police report or incident exchange form"],
+    "theft": ["Photos of vehicles and scene", "Police report or incident exchange form"],
+    "hit_and_run": ["Photos of vehicles and scene", "Police report or incident exchange form", "Other driver and witness information"],
+    "two_party": ["Photos of vehicles and scene", "Police report or incident exchange form", "Other driver and witness information"],
+    "unknown": ["Photos of vehicles and scene", "Police report or incident exchange form", "Other driver and witness information"],
+}
+
+
+def required_docs_for(claim: ClaimNarrative, classification: ClaimClassification) -> list[tuple[str, str]]:
+    """TYPE_REQUIRED_DOCS narrowed by auto sub-type: a hail or glass claim never hears about another driver."""
+    docs = TYPE_REQUIRED_DOCS.get(classification.claim_type, TYPE_REQUIRED_DOCS["other"])
+    line = str(getattr(classification, "likely_policy_line", "") or "").lower()
+    if classification.claim_type == "auto_collision" or (classification.claim_type == "other" and re.search(r"auto|vehicle|car|motor", line)):
+        keep = AUTO_SUBTYPE_DOCS[auto_subtype(claim)]
+        docs = [(d, r) for d, r in TYPE_REQUIRED_DOCS["auto_collision"] if d in keep]
+    return docs
+
+
 def generate_document_checklist(
     claim_value: Any,
     classification_value: Any,
@@ -491,7 +541,7 @@ def generate_document_checklist(
     required = set(evidence_decision.required_documents)
 
     items: list[DocumentChecklistItem] = []
-    for document, reason in TYPE_REQUIRED_DOCS.get(classification.claim_type, TYPE_REQUIRED_DOCS["other"]):
+    for document, reason in required_docs_for(claim, classification):
         provided = _document_provided(document, claim)
         priority = "required" if document in required else "recommended"
         items.append(
@@ -505,16 +555,7 @@ def generate_document_checklist(
             )
         )
 
-    if classification.claim_type == "auto_collision" and _positive_safety_concerns(claim):
-        items.append(
-            DocumentChecklistItem(
-                item="Names of injured people and treatment locations",
-                reason="Supports urgent injury claim assignment.",
-                priority="required",
-                already_provided=False,
-                status="unknown",
-            )
-        )
+    # Injury details (who, treatment) are the adjuster's to gather after escalation, not a checklist item for the call.
 
     checklist = DocumentChecklist(
         items=items,

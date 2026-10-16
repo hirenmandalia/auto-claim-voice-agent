@@ -1,0 +1,47 @@
+{
+  "id": "other_driver_card_in_hand",
+  "title": "Claimant with the other driver's card in hand",
+  "tests": "The camera is opened for the card and the details are pinned.",
+  "persona": {
+    "style": "helpful",
+    "volunteer_up_front": false
+  },
+  "facts": {
+    "policyholder": "Jordan Lee",
+    "policy_number": "AUTO-90210",
+    "vehicle": "2013 Toyota Sienna",
+    "what_happened": "a sedan clipped my rear quarter panel changing lanes on 880 near the Dixon Landing exit",
+    "when": "about an hour ago",
+    "injuries": "no",
+    "other_party": "yes, the driver pulled over and I'm holding their insurance card right now",
+    "has_photos": "yes",
+    "police_report": "no, we just exchanged details",
+    "contact": "phone"
+  },
+  "expect": {
+    "route": "policy_review",
+    "closes": true,
+    "should_ask": [
+      "other_driver"
+    ],
+    "should_not_ask": [],
+    "camera_request": true,
+    "send_frames_on_camera": true
+  },
+  "truth": {
+    "date_of_loss": "2026-10-16",
+    "location_keywords": [
+      "880",
+      "dixon"
+    ],
+    "cause_keywords": [
+      "sedan",
+      "clip",
+      "lane",
+      "quarter"
+    ],
+    "injury_status": "absent",
+    "other_party": "known",
+    "contact_method": "phone"
+  }
+}

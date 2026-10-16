@@ -325,7 +325,7 @@ async def run(base, only=None, use_judge=False):
         await c.close()
     pathlib.Path(ROOT / "evals" / "reports").mkdir(exist_ok=True)
     out = ROOT / "evals" / "reports" / f"live-{datetime.now().strftime('%Y%m%d-%H%M%S')}.json"
-    out.write_text(json.dumps(results, indent=2))
+    out.write_text(json.dumps(results + [{"_meta": True, "git_rev": _git_rev(), "generated": datetime.now().isoformat(timespec="seconds")}], indent=2))
     passed = sum(r["pass"] for r in results)
     print(f"\n{passed}/{len(results)} passed  (report: {out.relative_to(ROOT)})")
     return passed == len(results)

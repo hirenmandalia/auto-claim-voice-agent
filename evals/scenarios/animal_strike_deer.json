@@ -1,0 +1,47 @@
+{
+  "id": "animal_strike_deer",
+  "title": "Animal strike, deer",
+  "tests": "Single-vehicle variant; the cause must be captured correctly.",
+  "persona": {
+    "style": "shaken but fine",
+    "volunteer_up_front": false
+  },
+  "facts": {
+    "policyholder": "Jordan Lee",
+    "policy_number": "AUTO-90210",
+    "vehicle": "2013 Toyota Sienna",
+    "what_happened": "a deer ran across Calaveras Road near Milpitas and I hit it; the front grille and headlight are smashed",
+    "when": "about two hours ago, around dusk",
+    "injuries": "no, I'm fine, the deer ran off",
+    "other_party": "no other car",
+    "has_photos": "not right now, I'm waiting for the tow",
+    "police_report": "no",
+    "contact": "phone"
+  },
+  "expect": {
+    "route": "policy_review",
+    "closes": true,
+    "should_ask": [
+      "photos"
+    ],
+    "should_not_ask": [
+      "other_driver_exchange"
+    ],
+    "camera_request": false
+  },
+  "truth": {
+    "date_of_loss": "2026-10-16",
+    "location_keywords": [
+      "calaveras"
+    ],
+    "cause_keywords": [
+      "deer",
+      "animal",
+      "grille",
+      "headlight"
+    ],
+    "injury_status": "absent",
+    "other_party": "none",
+    "contact_method": "phone"
+  }
+}

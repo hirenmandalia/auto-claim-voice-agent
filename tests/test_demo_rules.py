@@ -80,6 +80,32 @@ class ValidatorRules(unittest.TestCase):
         self.assertIn("phone or by email", policies.BLOCKING_FIELD_QUESTIONS["contact_method"])
 
 
+class SubtypeChecklist(unittest.TestCase):
+    """Scenario run: a glass, hail, or deer claim must never hear about a police report or another driver."""
+
+    @staticmethod
+    def narr(desc):
+        return claim(loss_description=desc, raw_narrative_summary=desc)
+
+    def test_subtypes_detected_from_the_claimants_words(self):
+        cases = {"a rock chipped my windshield on 101": "glass", "hail dented the hood and roof": "weather", "I hit a deer on Calaveras Road": "animal",
+                 "scraped the bumper on a concrete light pole": "single_vehicle", "someone keyed the driver side": "vandalism",
+                 "rear-ended at a red light and the driver drove off": "hit_and_run", "another car ran a red light and hit my passenger side": "two_party",
+                 "a sedan clipped my rear quarter panel changing lanes": "two_party"}
+        for desc, want in cases.items():
+            self.assertEqual(policies.auto_subtype(self.narr(desc)), want, desc)
+
+    def test_checklist_narrows_by_subtype(self):
+        from schemas import ClaimClassification
+        cls = ClaimClassification(claim_type="auto_collision", severity="low", severity_rationale="minor", likely_policy_line="Personal auto")
+        docs = lambda d: [x for x, _ in policies.required_docs_for(self.narr(d), cls)]
+        self.assertEqual(docs("hail dented the hood"), ["Photos of vehicles and scene"])
+        self.assertEqual(docs("a rock chipped my windshield"), ["Photos of vehicles and scene"])
+        self.assertEqual(docs("someone keyed my van"), ["Photos of vehicles and scene", "Police report or incident exchange form"])
+        self.assertEqual(len(docs("another car ran a red light and hit me")), 3)
+        self.assertEqual(len(docs("rear-ended and the driver drove off")), 3)
+
+
 class ClosingGate(unittest.TestCase):
     """Incidents: closing before the checklist; closing never arriving; re-asking known facts."""
 
@@ -109,6 +135,14 @@ class ClosingGate(unittest.TestCase):
         s = live_tools.summarize_workflow_for_voice(workflow(missing=["date_of_loss"]), "photos police other driver witness")
         self.assertEqual(s["core_facts_still_needed"], ["date_of_loss"])
         self.assertFalse(s["closing_allowed"])
+
+    def test_offered_photos_block_closing_until_asked_to_show(self):
+        """Scenario run: the agent closed although the caller said they had photos and the other driver's card."""
+        convo = "Agent: photos? police? other driver? Claimant: I have photos and their insurance card, no police report"
+        s = live_tools.summarize_workflow_for_voice(workflow(), convo, "I have photos and their insurance card, no police report")
+        self.assertFalse(s["closing_allowed"]); self.assertTrue(s["offered_but_not_yet_collected"])
+        s2 = live_tools.summarize_workflow_for_voice(workflow(), convo + " Agent: could you turn on your camera and show me the card?", "I have photos and their insurance card, no police report")
+        self.assertTrue(s2["closing_allowed"])
 
     def test_already_known_list_is_populated(self):
         s = live_tools.summarize_workflow_for_voice(workflow(), "")
@@ -200,9 +234,13 @@ class ServerHelpers(unittest.TestCase):
         for t in ("Your claim packet is ready, you can review it in the app, and once you submit it, an adjuster will get started.", "I'm just finishing up my notes and will confirm in a moment."):
             self.assertFalse(server.PREMATURE_CLOSE.search(t), t)
 
+    def test_scope_decline_detected(self):
+        self.assertTrue(server.SCOPE_DECLINE.search("I'm so sorry about your kitchen, but I can only take auto insurance claims here."))
+        self.assertFalse(server.SCOPE_DECLINE.search("I've noted the damage to your van."))
+
     def test_silence_placeholders_and_camera_asks(self):
         """Incidents: the agent said 'No speech' aloud; 'you can provide that in the app' instead of opening the camera."""
-        for t in ("No speech.", " no speech ", "No response", "[silence]"):
+        for t in ("No speech.", " no speech ", "No response", "[silence]", "<no speech>{pause}", "\u200b"):
             self.assertTrue(server.SILENCE_PLACEHOLDER.match(t), t)
         self.assertFalse(server.SILENCE_PLACEHOLDER.match("I can see the dent on the door."))
         for t in ("Could you show me the other driver's insurance card?", "Please turn on your camera", "Hold the form up to the camera"):

@@ -1,0 +1,47 @@
+{
+  "id": "glass_rock_chip",
+  "title": "Glass only, rock chip",
+  "tests": "Short call: no police report, no other party; closes fast without irrelevant questions.",
+  "persona": {
+    "style": "busy, wants this done quickly",
+    "volunteer_up_front": true
+  },
+  "facts": {
+    "policyholder": "Jordan Lee",
+    "policy_number": "AUTO-90210",
+    "vehicle": "2013 Toyota Sienna",
+    "what_happened": "a rock flew up from a truck on 101 near the Oakland Rd exit in San Jose and chipped my windshield; it's a chip about the size of a quarter, no crack yet",
+    "when": "this morning on my commute",
+    "injuries": "no",
+    "other_party": "no, just a truck ahead of me, no contact",
+    "has_photos": "not right now",
+    "police_report": "no",
+    "contact": "email"
+  },
+  "expect": {
+    "route": "policy_review",
+    "closes": true,
+    "should_ask": [],
+    "should_not_ask": [
+      "other_driver_exchange",
+      "police"
+    ],
+    "camera_request": false,
+    "max_agent_questions": 4
+  },
+  "truth": {
+    "date_of_loss": "2026-10-16",
+    "location_keywords": [
+      "101",
+      "oakland"
+    ],
+    "cause_keywords": [
+      "rock",
+      "windshield",
+      "chip"
+    ],
+    "injury_status": "absent",
+    "other_party": "none",
+    "contact_method": "email"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "id": "weather_hail",
+  "title": "Weather, hail damage",
+  "tests": "No police report, no other party; the agent should not ask about either.",
+  "persona": {
+    "style": "matter of fact",
+    "volunteer_up_front": false
+  },
+  "facts": {
+    "policyholder": "Jordan Lee",
+    "policy_number": "AUTO-90210",
+    "vehicle": "2013 Toyota Sienna",
+    "what_happened": "the hailstorm last night dented the hood and roof of my van while it was parked in my driveway at 773 Cardinal Lane in Pleasanton",
+    "when": "last night",
+    "injuries": "no, nobody was outside",
+    "other_party": "no one, it was the weather",
+    "has_photos": "yes, I took photos this morning",
+    "police_report": "no, why would I",
+    "contact": "email"
+  },
+  "expect": {
+    "route": "policy_review",
+    "closes": true,
+    "should_ask": [
+      "photos"
+    ],
+    "should_not_ask": [
+      "other_driver_exchange",
+      "police"
+    ],
+    "camera_request": false
+  },
+  "truth": {
+    "date_of_loss": "2026-10-15",
+    "location_keywords": [
+      "cardinal",
+      "pleasanton"
+    ],
+    "cause_keywords": [
+      "hail",
+      "dent",
+      "hood",
+      "roof"
+    ],
+    "injury_status": "absent",
+    "other_party": "none",
+    "contact_method": "email"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "id": "volunteers_everything",
+  "title": "Claimant who volunteers everything up front",
+  "tests": "Nothing re-asked; closes without redundant questions.",
+  "persona": {
+    "style": "organized, gives everything in the first breath",
+    "volunteer_up_front": true
+  },
+  "facts": {
+    "policyholder": "Jordan Lee",
+    "policy_number": "AUTO-90210",
+    "vehicle": "2013 Toyota Sienna",
+    "what_happened": "I was rear-ended at a red light on Coleman Ave in San Jose this morning, nobody was hurt, the other driver gave me their insurance card, I have photos, there is no police report, and email is best",
+    "when": "this morning",
+    "injuries": "no",
+    "other_party": "known, I have their card",
+    "has_photos": "yes",
+    "police_report": "no",
+    "contact": "email"
+  },
+  "expect": {
+    "route": "policy_review",
+    "closes": true,
+    "should_ask": [],
+    "should_not_ask": [],
+    "camera_request": true,
+    "max_agent_questions": 3,
+    "no_reask": [
+      "date",
+      "location",
+      "contact",
+      "police"
+    ]
+  },
+  "truth": {
+    "date_of_loss": "2026-10-16",
+    "location_keywords": [
+      "coleman"
+    ],
+    "cause_keywords": [
+      "rear"
+    ],
+    "injury_status": "absent",
+    "other_party": "known",
+    "contact_method": "email"
+  }
+}

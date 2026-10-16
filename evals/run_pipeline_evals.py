@@ -16,6 +16,12 @@ from live_tools import summarize_workflow_for_voice  # noqa: E402
 FIXTURES = ROOT / "evals" / "fixtures" / "transcripts"
 REPORTS = ROOT / "evals" / "reports"
 
+def _git_rev():
+    import subprocess
+    try: return subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip()
+    except Exception: return "unknown"
+
+
 
 def check(expect, wf, summary):
     claim = wf["normalized_claim"]; route = wf["fraud_safety_gate"]["final_routing_decision"]
@@ -50,7 +56,7 @@ async def run(only=None):
         print(f"{'PASS' if not failures else 'FAIL'}  {path.stem:34s} {results[-1]['seconds']:5.1f}s  {'; '.join(failures) or detail}")
     REPORTS.mkdir(exist_ok=True)
     out = REPORTS / f"pipeline-{datetime.now().strftime('%Y%m%d-%H%M%S')}.json"
-    out.write_text(json.dumps(results, indent=2))
+    out.write_text(json.dumps(results + [{"_meta": True, "git_rev": _git_rev(), "generated": datetime.now().isoformat(timespec="seconds")}], indent=2))
     passed = sum(r["pass"] for r in results)
     print(f"\n{passed}/{len(results)} passed  (report: {out.relative_to(ROOT)})")
     return passed == len(results)

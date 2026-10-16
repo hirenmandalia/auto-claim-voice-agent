@@ -9,6 +9,14 @@ Three layers, cheapest first. Run everything with `./run_evals.sh` from the proj
 | 2. Notes pipeline | `.venv/bin/python evals/run_pipeline_evals.py` | GOOGLE_API_KEY | ~1 min | what the real extractor + rules produce for fixture transcripts: route, missing facts, contact/date/policy capture, whether the claim can close |
 | 3. Live conversation | `.venv/bin/python evals/run_live_evals.py` | local server on :4177 + key | ~6 min | greeting speaks first by name, reply < 3 s, one reply per turn, no re-asking known facts, call order and closing line, `state.closed` (Review & submit), 10 s gentle re-ask once, claimant voice cancels re-ask, dark camera → asks for light, no technical talk, no language drift |
 
+| 4. End-to-end scenarios | `.venv/bin/python evals/run_scenario_evals.py` | local server on :4177 + key | ~20 min | twelve persona scenarios (two-party collision, hit and run, single vehicle, glass, vandalism, hail, animal strike, injury, non-auto loss, off-topic caller, volunteers everything, other driver's card in hand) played by a Gemini-simulated claimant against the real agent. Deterministic pass/fail on route, closing, checklist coverage, forbidden questions, guards and latency; extraction accuracy vs ground truth and a judge rubric are tracked metrics. `./run_evals.sh full` includes this layer. |
+
+## Where to see the history
+
+- `evals/reports/index.html`: every run, newest first, with pass counts, extraction accuracy, judge score, and the code revision, each linking to its own report page with full transcripts. Rebuild with `.venv/bin/python evals/render_report.py --history` (the gate script does this).
+- `evals/RUNLOG.md`: the narrative, one entry per run that mattered: what it found, what we changed, which commit. It is rendered into the index page. Add an entry whenever a run leads to a fix.
+- `evals/reports/*.json`: the raw records, tracked in git so the history survives machines and sessions.
+
 Reports land in `evals/reports/` as JSON with every agent line, so a failure can be read without re-running.
 `--judge` on the live runner adds a Gemini-scored tone rubric (warmth, conciseness, no repetition, natural flow) per scenario.
 
@@ -42,6 +50,10 @@ Reports land in `evals/reports/` as JSON with every agent line, so a failure can
    - Finish a claim: the closing line, "Review & submit" visible, tapping it shows the summary screen.
    - Certificate still trusted after any Wi-Fi/IP change (regenerate `certs/` if the Mac's address changed).
 4. Skim `evals/reports/live-*.json` agent lines for tone; run `--judge` if the wording changed.
+
+## Adding a scenario
+
+Add a JSON file under `evals/scenarios/` with `persona` (style, whether they volunteer everything, optional off-topic lines), `facts` (what the simulated claimant knows and has), `expect` (route, closes, should_ask / should_not_ask checklist items, camera_request, limits) and `truth` (ground truth for extraction accuracy). The simulator only ever answers from `facts`, so a scenario is reproducible in substance even though the wording varies.
 
 ## Adding a case
 
