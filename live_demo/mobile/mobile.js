@@ -387,6 +387,7 @@ function connectLive() {
       else if (message.type === "interrupted") stopPlayback();
       else if (message.type === "lighting") setLighting(message.dark, message.issue);
       else if (message.type === "camera_request") requestCamera();
+      else if (message.type === "emergency") showEmergency(message.text);
       else if (message.type === "error") {
         processing = false;
         appendSystem(message.message);
@@ -575,6 +576,16 @@ function stopLiveVoice(closeSocket = true) {
     disconnectLive();
     setStatus("Paused. Tap Talk to continue.");
   }
+}
+
+function showEmergency(text) {
+  let el = document.querySelector("#emergencyBanner");
+  if (!el) {
+    el = document.createElement("div"); el.id = "emergencyBanner"; el.className = "emergency";
+    claimScroll.prepend(el);
+  }
+  el.textContent = text || "If anyone is seriously hurt, hang up and call 911 now.";
+  claimScroll.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 /* ---------- camera ---------- */

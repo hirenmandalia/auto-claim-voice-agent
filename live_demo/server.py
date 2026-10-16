@@ -103,7 +103,7 @@ SILENCE_PLACEHOLDER = re.compile(r"^[\W\u200b\u200c\ufeff]*((<no speech>|no spee
 # The agent asked the claimant to show something: the app should open the camera for them.
 CAMERA_ASK = re.compile(r"\b(show me|hold (it|that|the card|the form|them) up|point (the|your) camera|turn on (the|your) camera|on (the|your) camera|use (the|your) camera)\b", re.IGNORECASE)
 # Status the agent may never invent before the real closing: nothing is submitted, reviewed, or followed up by the agent.
-PREMATURE_CLOSE = re.compile(r"\b(being submitted|has been submitted|is (now )?submitted|submitted (for|to) (a )?(human )?review|sent (to|for) (an? )?(adjuster|review)|(human|a) reviewer will|will (get in touch|reach out|contact you|be in touch)|we('ll| will) (call|email) you)\b", re.IGNORECASE)
+PREMATURE_CLOSE = re.compile(r"\b(being submitted|has been submitted|is (now )?submitted|submitted (for|to) (a )?(human )?review|sent (to|for) (an? )?(adjuster|review)|(human|a) reviewer will|will (get in touch|reach out|contact you)|we('ll| will) (call|email) you)\b", re.IGNORECASE)
 # Documents that are not on the auto checklist. The prompt forbids asking for them; this backstop cuts the question.
 OFF_CHECKLIST_ASK = re.compile(r"\b(repair )?(estimates?|receipts?|invoices?|medical (records?|bills?|documentation|documents?)|mileage|odometer|VIN)\b.*\?", re.IGNORECASE | re.DOTALL)
 # The agent declined a non-auto loss. Even with no facts collected, the app must show "Auto claims only".
@@ -112,7 +112,15 @@ OFF_CHECKLIST_ASK = re.compile(r"\b(repair )?(estimates?|receipts?|invoices?|med
 SCOPE_DECLINE = re.compile(r"(only (take|handle|accept)[^.]{0,40}auto (insurance )?claims|not an auto (insurance )?claim|contact (your|the) insurer for (your|that|the|this))[^.]{0,80}\b(home|homeowners?|renters?|condo|property|health|medical|travel|life|pet|flood|pipe|kitchen|house|apartment)\b|\b(home|homeowners?|renters?|condo|property|health|medical|travel|life|pet|flood|pipe|kitchen|house|apartment)\b[^.]{0,120}(only (take|handle|accept)[^.]{0,40}auto (insurance )?claims|not an auto (insurance )?claim|contact (your|the) insurer for (your|that|the|this))", re.IGNORECASE)
 # The agent asked the claimant to adjust the camera again. Two tries is plenty; after that it must move on.
 CAMERA_RETRY = re.compile(r"(can't|cannot|unable to|not able to|having trouble|still can't)[^.?]{0,40}(see|make out)|get (a bit |a little )?closer|hold (the phone|it) closer|more light|turn on a light|better lit|well.?lit|adjust(ing)? the light", re.IGNORECASE)
-CLOSING_LINE = re.compile(r"packet is (now )?ready|review (it )?in the app|once you submit", re.IGNORECASE)
+CLOSING_LINE = re.compile(r"packet is (now )?ready|review (it )?in the app|once you submit|come back (to (it|this) )?(any ?time|whenever|later)( in the app)?|(finish|complete) (it|this|the claim) (later|whenever|any ?time)|saved (for you|so far|what you'?ve told me)", re.IGNORECASE)
+# The agent told the claimant to hang up and call emergency services: the phone shows a persistent banner.
+def is_closing_line(text: str) -> bool:
+    """The closing or pause message ends the call. An offer phrased as a question ("would you like to continue now
+    or come back later?") contains the same words and must not count."""
+    return bool(CLOSING_LINE.search(text)) and "?" not in text
+
+
+EMERGENCY_LINE = re.compile(r"\b(call 911|call 9-1-1|dial 911|hang up (right )?now|emergency services (right )?now)\b", re.IGNORECASE)
 # The agent must speak English; a transcript chunk in another script means the voice drifted (seen: Spanish, Devanagari).
 NON_LATIN = re.compile(r"[\u0400-\u04FF\u0590-\u05FF\u0600-\u06FF\u0900-\u0DFF\u0E00-\u0E7F\u3040-\u30FF\u3400-\u9FFF\uAC00-\uD7AF]")
 # Words the claimant must never hear from the agent: internal mechanics leaking into speech.
@@ -1137,6 +1145,8 @@ async def live_voice(websocket: WebSocket) -> None:
         started = time.monotonic()
         while time.monotonic() - started < 90:
             await asyncio.sleep(0.5)
+            if session.closed:
+                return  # the call has ended (closing or pause message): never tack a question on
             if turn_state["awaiting_reply"] or claimant_is_active(window=delay):
                 return  # the claimant spoke (or typed) since: their words win, no re-ask
             if session.transcript and session.transcript[-1].get("id") != agent_turn_id:
@@ -1309,8 +1319,8 @@ async def live_voice(websocket: WebSocket) -> None:
             logger.info("claim route=%s progress=%s findings=%s missing=%s", state.get("route"), state.get("progress"), findings, state.get("missing_blockers"))
             await send({"type": "state", "state": state})
             live_session = live_ref["session"]
-            already_closing = bool(CLOSING_LINE.search(pending["Agent"]["text"])) or any(
-                t["speaker"] == "Agent" and CLOSING_LINE.search(t["text"]) for t in session.transcript)
+            already_closing = is_closing_line(pending["Agent"]["text"]) or any(
+                t["speaker"] == "Agent" and is_closing_line(t["text"]) for t in session.transcript)
             if (state.get("closing_allowed") and not state.get("closed") and not already_closing and not session.closing_nudged
                     and live_session and not session.camera_enabled  # the claimant is still showing something: close afterwards
                     and not turn_state["awaiting_reply"] and not pending["Claimant"]["text"].strip()):
@@ -1373,6 +1383,8 @@ async def live_voice(websocket: WebSocket) -> None:
         await send({"type": "transcript", "speaker": speaker, "text": turn["text"], "id": turn["id"], "final": True})
         if speaker == "Agent" and CAMERA_ASK.search(turn["text"]) and not session.camera_enabled:
             await send({"type": "camera_request"})
+        if speaker == "Agent" and EMERGENCY_LINE.search(turn["text"]):
+            await send({"type": "emergency", "text": "If anyone is seriously hurt, hang up and call 911 now. Your claim will be here when you're ready."})
         if speaker == "Agent" and session.camera_enabled and CAMERA_RETRY.search(turn["text"]):
             session.camera_retries += 1
             if session.camera_retries == 2 or session.closed:
@@ -1393,7 +1405,9 @@ async def live_voice(websocket: WebSocket) -> None:
             session.route = "out_of_scope"
             if session.last_workflow:
                 await send({"type": "state", "state": _current_ui_state(session)})
-        if speaker == "Agent" and CLOSING_LINE.search(turn["text"]) and session.last_workflow:
+        if speaker == "Agent" and is_closing_line(turn["text"]) and session.last_workflow is None:
+            session.closed = True  # a pause message before any notes pass still ends the call cleanly
+        if speaker == "Agent" and is_closing_line(turn["text"]) and session.last_workflow:
             # The closing line is an agent turn, so no claim-graph run follows it: push the state now so the
             # app flips to "closed" (Review & submit) the moment the line is spoken. The guards keep the agent
             # from saying it early, so once said, the claim stays closed even if later notes add a loose end.

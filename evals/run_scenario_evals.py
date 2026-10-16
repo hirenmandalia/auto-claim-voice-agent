@@ -28,7 +28,7 @@ def _git_rev():
     except Exception: return "unknown"
 
 ACCOUNT = {"policyholder_name": "Jordan Lee", "policy_number": "AUTO-90210", "vehicle": "2013 Toyota Sienna"}
-CLOSING = re.compile(r"packet is (now )?ready|review (it )?in the app|once you submit", re.I)
+CLOSING = re.compile(r"packet is (now )?ready|review (it )?in the app|once you submit|come back (to (it|this) )?(any ?time|whenever|later)|(finish|complete) (it|this|the claim) (later|whenever|any ?time)|saved (for you|so far|what you'?ve told me)", re.I)
 DECLINE = re.compile(r"only (take|handle|help with|accept)[^.]{0,40}auto|auto (insurance )?claims only|not (an )?auto|can't help with (that|this) here|contact (the )?insurer for that", re.I)
 ASK = {  # how the agent asks for each checklist item, used for coverage and for "should not ask"
     "photos": re.compile(r"photo|picture|camera|show me", re.I),
@@ -159,7 +159,7 @@ The true facts of your situation (use only these; if asked something not covered
 If the agent asks you to turn on the camera or show something and you have it, say "Sure, here it is" (and nothing else) and set offered_camera=true. If you don't have it, say so plainly.
 If you are already showing something and the agent describes what it sees, say "That's it, that's the damage" (or "that's the card") and nothing else.
 If the agent asks you to adjust the camera (closer, more light, different angle): the first time, say "Okay, how about now?"; the second time or later, say "I can't get a better shot right now, can we move on?" and set gave_up_camera=true.
-If the agent has given a closing message (your packet is ready / review it in the app) or declined your claim as not an auto claim, reply with a brief goodbye and set done=true.
+If the agent has given a closing or pause message (your packet is ready / review it in the app / come back any time), declined your claim as not an auto claim, or told you to hang up and call 911, reply with a brief goodbye (or "okay, calling now") and set done=true.
 Never ask the agent to repeat itself. Keep each reply under 30 words.
 
 Conversation so far:
@@ -213,7 +213,7 @@ def evaluate(sc, S, final_state, transcript, extras):
     agent = [l.text for l in transcript if l.who == "Agent"]; joined = " ".join(agent)
     route = final_state.get("route")
     if ex.get("route") and route != ex["route"]: fails.append(f"route {route!r}, expected {ex['route']!r}")
-    first_close = next((i for i, t in enumerate(agent) if CLOSING.search(t)), None)
+    first_close = next((i for i, t in enumerate(agent) if CLOSING.search(t) and "?" not in t), None)
     if ex.get("closes"):
         if first_close is None: fails.append("never gave the closing line")
         elif any("?" in t for t in agent[first_close + 1:]): fails.append("asked a question after the closing")
@@ -233,6 +233,17 @@ def evaluate(sc, S, final_state, transcript, extras):
         fails.append(f"{sum('?' in t for t in agent)} questions asked, limit {ex['max_agent_questions']}")
     if ex.get("medical_reminders_max") and sum(1 for t in agent if MEDICAL.search(t)) > ex["medical_reminders_max"]:
         fails.append(f"medical reminder repeated {sum(1 for t in agent if MEDICAL.search(t))} times")
+    for rx in ex.get("must_mention", []):
+        if not re.search(rx, joined, re.I): fails.append(f"never said anything matching /{rx}/")
+    if ex.get("first_line_must_match"):
+        # the first agent line after the claimant's first statement (the greeting is line 0)
+        first = agent[1] if len(agent) > 1 else ""
+        if not re.search(ex["first_line_must_match"], first, re.I): fails.append(f"first reply did not open the expected way: {first!r}")
+        if re.search(r"(911|hang up)", first, re.I) and not re.search(r"(so sorry|sorry to hear|i'?m sorry)", first.split("911")[0] if "911" in first else first, re.I):
+            fails.append(f"911 instruction without sympathy first: {first!r}")
+    for rx in ex.get("must_not_mention", []):
+        if re.search(rx, joined, re.I): fails.append(f"said something matching /{rx}/ which this scenario forbids")
+    if ex.get("emergency_event") and not any(ev["type"] == "emergency" for ev in S.events): fails.append("no emergency banner event sent to the phone")
     if ex.get("must_decline_off_topic"):
         if ADVICE.search(joined): fails.append(f"gave advice or a quote: {ADVICE.search(joined).group(0)!r}")
     for name, rx in (("meta-talk", srv.META_TALK), ("premature status", srv.PREMATURE_CLOSE), ("off-checklist request", srv.OFF_CHECKLIST_ASK)):

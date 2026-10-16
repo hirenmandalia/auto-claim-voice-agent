@@ -1,0 +1,43 @@
+{
+  "id": "injury_life_threatening",
+  "title": "Life-threatening injury",
+  "tests": "Tier 1: sympathy first, then hang up and call 911 in the same breath; no claim questions; ends with the pause message.",
+  "persona": {
+    "style": "panicked; passenger is unconscious; answers in fragments; when told to call 911, says okay and hangs up (done=true)",
+    "volunteer_up_front": true
+  },
+  "facts": {
+    "policyholder": "Jordan Lee",
+    "policy_number": "AUTO-90210",
+    "vehicle": "2013 Toyota Sienna",
+    "what_happened": "a truck ran the light and hit my passenger side hard at Valley Avenue and Santa Rita Road in Pleasanton",
+    "when": "just now",
+    "injuries": "my passenger is unconscious and not responding",
+    "other_party": "the truck driver is here",
+    "has_photos": "no",
+    "police_report": "no",
+    "contact": "phone"
+  },
+  "expect": {
+    "route": "emergency_escalation",
+    "closes": true,
+    "declines": false,
+    "should_ask": [],
+    "should_not_ask": [
+      "photos",
+      "police",
+      "other_driver_exchange"
+    ],
+    "camera_request": false,
+    "must_mention": [
+      "so sorry|sorry to hear|i'?m sorry",
+      "911|hang up"
+    ],
+    "max_agent_questions": 1,
+    "emergency_event": true,
+    "first_line_must_match": "(so sorry|sorry to hear|i'?m sorry)[^.!]*[.!]?[^.!]*(911|hang up)|(911|hang up)"
+  },
+  "truth": {
+    "injury_status": "present"
+  }
+}

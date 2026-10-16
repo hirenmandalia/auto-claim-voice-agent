@@ -1,0 +1,286 @@
+[
+  {
+    "id": "injury_collision",
+    "title": "Injury, not life-threatening, caller continues",
+    "tests": "Tier 2: empathy, no need to file today (7-10 days), photos + exchange advice, offers to continue or pause; caller continues; escalation closing.",
+    "pass": false,
+    "failures": [
+      "asked a question after the closing",
+      "a reply took 5.1s to start"
+    ],
+    "notes": [
+      "first words: median 1.0s, worst 5.1s"
+    ],
+    "route": "emergency_escalation",
+    "closed": true,
+    "seconds": 143.0,
+    "extraction": {
+      "checks": {
+        "date": true,
+        "location": true,
+        "cause": true,
+        "injuries": true,
+        "contact": true,
+        "other_party": true
+      },
+      "score": 100
+    },
+    "judge": {
+      "warmth": 4,
+      "no_repetition": 2,
+      "collected_what_caller_had": 4,
+      "no_advice": 4,
+      "efficiency": 3,
+      "worst_moment": "It's still quite difficult to read from here. Don't worry, we can add photos to the claim later."
+    },
+    "transcript": [
+      {
+        "who": "Agent",
+        "text": "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yes, we're pulled over and safe. My neck hurts a bit, but I'm okay to keep going."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm so sorry to hear about your neck; please know we're here to support you through this stressful time. There's no need to file right now, and nothing is lost by waiting, so would you like to continue now or come back to it later?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I'd like to keep going now, please."
+      },
+      {
+        "who": "Agent",
+        "text": "Of course. To help me understand the situation, could you please describe what happened?"
+      },
+      {
+        "who": "Claimant",
+        "text": "A pickup hit us from the side at Valley Avenue and Santa Rita Road in Pleasanton. It happened just a few minutes ago."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm noting the details of the collision at Valley Avenue and Santa Rita Road. Let me check that policy and sync my notes."
+      },
+      {
+        "who": "Agent",
+        "text": "I have that location and description noted down. Would you prefer to be contacted by phone or email regarding this claim?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Phone works best for me, please."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted that phone is your preferred contact method. Would you be able to turn on your camera now so I can see the damage to the vehicle?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Sure, here it is"
+      },
+      {
+        "who": "Agent",
+        "text": "I'm seeing a diagram on your screen instead of the vehicle. Could you please tilt the camera to show the damage on the side of your car?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Okay, how about now?"
+      },
+      {
+        "who": "Agent",
+        "text": "I'm still seeing that diagram instead of the vehicle. Could you please point the camera at the actual damage"
+      },
+      {
+        "who": "Agent",
+        "text": "could you switch the view to show the damage on the side of your car instead?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I can't get a better shot right now, can we move on?"
+      },
+      {
+        "who": "Agent",
+        "text": "That's perfectly fine, photos can be added later. Do you have a police report or an incident exchange form from the scene?"
+      },
+      {
+        "who": "Claimant",
+        "text": "The police are on their way right now."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted that the police are on their way. Do you happen to have the other driver's information or insurance details available to share?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yes, the other driver is here and we already swapped insurance information."
+      },
+      {
+        "who": "Agent",
+        "text": "That is great to hear. Would you be willing to show me their insurance card or license on camera, or would you prefer to read the details to me instead?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Sure, here it is"
+      },
+      {
+        "who": "Agent",
+        "text": "Please point your camera at the document so I can capture it for our records."
+      },
+      {
+        "who": "Agent",
+        "text": "I can't quite make out the details on the document from here. Could you please move the camera a bit closer so the text is clear?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Okay, how about now?"
+      },
+      {
+        "who": "Agent",
+        "text": "It's a bit hard to make out the details clearly on camera, but that's alright, as photos can be added to your claim later."
+      },
+      {
+        "who": "Agent",
+        "text": "It's still quite difficult to read from here. Don't worry, we can add photos to the claim later."
+      },
+      {
+        "who": "Agent",
+        "text": "I've flagged your claim for urgent human review because of your neck pain, so please seek medical care if you haven't already. Your claim packet is now ready; you can review it in the app, and once you submit it, an adjuster will get started right away."
+      },
+      {
+        "who": "Claimant",
+        "text": "Thank you, goodbye."
+      }
+    ],
+    "run": 1
+  },
+  {
+    "id": "injury_life_threatening",
+    "title": "Life-threatening injury",
+    "tests": "Tier 1: sympathy first, then hang up and call 911 in the same breath; no claim questions; call ends.",
+    "pass": false,
+    "failures": [
+      "gave a closing line for a claim that should not close"
+    ],
+    "notes": [
+      "first words: median 3.0s, worst 3.0s"
+    ],
+    "route": "emergency_escalation",
+    "closed": true,
+    "seconds": 39.7,
+    "extraction": {
+      "checks": {
+        "injuries": true
+      },
+      "score": 100
+    },
+    "judge": {
+      "warmth": 5,
+      "no_repetition": 5,
+      "collected_what_caller_had": 5,
+      "no_advice": 5,
+      "efficiency": 5,
+      "worst_moment": "none"
+    },
+    "transcript": [
+      {
+        "who": "Agent",
+        "text": "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?"
+      },
+      {
+        "who": "Claimant",
+        "text": "No, a truck ran the light just now at Valley and Santa Rita in Pleasanton, hit us hard, my passenger is unconscious, call by phone, please help!"
+      },
+      {
+        "who": "Agent",
+        "text": "I'm so sorry to hear that. Please hang up right now and call 911; the claim can wait, and we'll be here when you're ready."
+      },
+      {
+        "who": "Claimant",
+        "text": "Okay, calling now!"
+      },
+      {
+        "who": "Agent",
+        "text": "What you've told me so far is saved, and you can come back anytime in the app to finish. This claim is flagged for urgent human review because someone was hurt, so please get medical care."
+      }
+    ],
+    "run": 1
+  },
+  {
+    "id": "injury_pause_for_later",
+    "title": "Injury, not life-threatening, caller pauses",
+    "tests": "Tier 2 with the caller choosing to come back later: pause message, nothing more asked, call ends, claim flagged.",
+    "pass": false,
+    "failures": [
+      "4 questions asked, limit 3",
+      "never said anything matching /exchange|insurance (information|details|info)/"
+    ],
+    "notes": [
+      "first words: median 1.0s, worst 1.4s"
+    ],
+    "route": "emergency_escalation",
+    "closed": true,
+    "seconds": 87.8,
+    "extraction": {
+      "checks": {
+        "injuries": true
+      },
+      "score": 100
+    },
+    "judge": {
+      "warmth": 5,
+      "no_repetition": 4,
+      "collected_what_caller_had": 3,
+      "no_advice": 3,
+      "efficiency": 4,
+      "worst_moment": "please make sure to get medical care"
+    },
+    "transcript": [
+      {
+        "who": "Agent",
+        "text": "Hello Jordan, I'm here to help with your claim today. Can you let me know if you and everyone involved are in a safe place?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yes, we're out of traffic, but I'm really shaken up. The police are on their way."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm so sorry to hear you're shaken up, but I'm glad you're in a safe spot. Could you tell me briefly what happened?"
+      },
+      {
+        "who": "Claimant",
+        "text": "A pickup hit us from the side at Valley Avenue and Santa Rita Road in Pleasanton just a few minutes ago."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm noting that side-impact collision at Valley Avenue and Santa Rita Road. Is everyone involved uninjured?"
+      },
+      {
+        "who": "Claimant",
+        "text": "My shoulder hurts and I feel shaky, but I can breathe fine and I'm not bleeding."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm so sorry, I know this is a stressful moment and we're here to support you. There's no need to file the claim right now, so if you can, please just focus on taking photos of the vehicle damage and exchanging information with the other driver. Would you like to keep going now, or come back to this later? This consultation is not medical advice or a diagnosis; please see a healthcare professional or seek care."
+      },
+      {
+        "who": "Claimant",
+        "text": "I'd really prefer to come back to this later. Thank you so much for understanding."
+      },
+      {
+        "who": "Agent",
+        "text": "I completely understand. What you've shared so far is saved, and you can come back to the app anytime you're ready to finish. Since you were hurt, this has been flagged for urgent human review, so please make sure to get medical care. We're here for you."
+      },
+      {
+        "who": "Claimant",
+        "text": "Thank you so much. Goodbye."
+      }
+    ],
+    "run": 1
+  },
+  {
+    "_meta": true,
+    "git_rev": "f392ccc",
+    "generated": "2026-10-16T11:39:40"
+  }
+]

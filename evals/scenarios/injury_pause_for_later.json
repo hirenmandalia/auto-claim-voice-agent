@@ -1,0 +1,45 @@
+{
+  "id": "injury_pause_for_later",
+  "title": "Injury, not life-threatening, caller pauses",
+  "tests": "Tier 2 with the caller choosing to come back later: pause message, nothing more asked, call ends, claim flagged.",
+  "persona": {
+    "style": "shaken and overwhelmed; when offered the choice to continue now or come back later, chooses later and thanks the agent",
+    "volunteer_up_front": false
+  },
+  "facts": {
+    "policyholder": "Jordan Lee",
+    "policy_number": "AUTO-90210",
+    "vehicle": "2013 Toyota Sienna",
+    "what_happened": "a pickup hit us from the side at Valley Avenue and Santa Rita Road in Pleasanton",
+    "when": "a few minutes ago",
+    "injuries": "my shoulder hurts and I feel shaky, but I can breathe fine and I'm not bleeding",
+    "other_party": "the other driver is here",
+    "has_photos": "not yet",
+    "police_report": "the police are on their way",
+    "contact": "phone"
+  },
+  "expect": {
+    "route": "emergency_escalation",
+    "closes": true,
+    "should_ask": [],
+    "should_not_ask": [
+      "police"
+    ],
+    "camera_request": false,
+    "medical_reminders_max": 2,
+    "must_mention": [
+      "stress|difficult|a lot to take in|here to support|here for you",
+      "seven to ten days|7 to 10 days|7-10 days|no need to file",
+      "photos?",
+      "exchang|insurance (information|details|info)",
+      "come back|later|saved|whenever you'?re ready"
+    ],
+    "must_not_mention": [
+      "911|hang up"
+    ],
+    "max_agent_questions": 5
+  },
+  "truth": {
+    "injury_status": "present"
+  }
+}

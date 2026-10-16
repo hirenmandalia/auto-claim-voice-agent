@@ -6,9 +6,26 @@ to the per-run reports, so the numbers and the story sit together.
 
 Format: `## <date> · <run> · <result>` then **Findings** / **Fixes** / **Commit** lines.
 
-## 2026-10-16 · scenarios, third run · in progress
-**Run:** `evals/run_scenario_evals.py`, all twelve personas, after the second run's fixes.
-**Findings:** pending.
+## 2026-10-16 · phone run, heavy bleeding · worked; wording softened
+**Run:** Hiren on the phone, simulating heavy bleeding, after the tiered injury protocol landed.
+**Findings:** behaved as designed: "Please hang up and call 911 immediately" as the first reply, no claim questions, route
+escalated, warm close ("we're here whenever you're ready"). The 911 line opened cold.
+**Fixes:** sympathy first ("I'm so sorry to hear that"), then 911 in the same breath; the life-threatening scenario now
+checks that the first reply opens with sympathy before the instruction.
+**Commit:** pending.
+
+## 2026-10-16 · scenarios, third run · 7/12 passed · extraction 86%
+**Run:** `evals/run_scenario_evals.py` (report `scenario-20261016-111259.json`), after the second run's fixes.
+**Findings:** off-topic caller, injured caller, two-party collision and hit-and-run now pass; the camera cap ended the
+ten-request loops. Remaining: hail, vandalism and deer were still asked about police or another driver because the
+agent's checklist came from a notes pass that ran before the cause was extracted; the volunteers-everything caller was
+asked again about the police report they had already mentioned; the deer call went silent after the last answer; two
+camera turns took 5–6 s to answer (photo captioned before speaking); the injured caller's notes missed date, location,
+cause and contact.
+**Fixes (applied, not yet re-run):** checklist narrowed by the sub-type read from the live transcript; volunteered
+checklist answers join the already-known list; decline detector counts only a named non-auto loss.
+**Open:** deer silence, injury extraction gap, camera-turn latency.
+**Commit:** b20f42e.
 
 ## 2026-10-16 · scenarios, second run · 4/12 passed · extraction 78%
 **Run:** `evals/run_scenario_evals.py` (report `scenario-20261016-105144.json`), after the first run's fixes.

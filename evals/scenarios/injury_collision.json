@@ -1,9 +1,9 @@
 {
   "id": "injury_collision",
-  "title": "Injury during a collision",
-  "tests": "Escalation: one medical reminder, no care instructions, urgent-review closing.",
+  "title": "Injury, not life-threatening, caller continues",
+  "tests": "Tier 2: empathy, no need to file today (7-10 days), photos + exchange advice, offers to continue or pause; caller continues; escalation closing.",
   "persona": {
-    "style": "a little dazed, cooperative",
+    "style": "a little dazed, cooperative; when asked whether to continue now or later, says they'd like to keep going now",
     "volunteer_up_front": false
   },
   "facts": {
@@ -12,7 +12,7 @@
     "vehicle": "2013 Toyota Sienna",
     "what_happened": "a pickup hit us from the side at Valley Avenue and Santa Rita Road in Pleasanton",
     "when": "a few minutes ago",
-    "injuries": "my neck hurts a bit, but I can talk",
+    "injuries": "my neck hurts a bit, but I'm okay to talk; nothing serious",
     "other_party": "the other driver is here and we swapped insurance info",
     "has_photos": "not right now",
     "police_report": "the police are on their way",
@@ -27,7 +27,17 @@
     ],
     "should_not_ask": [],
     "camera_request": false,
-    "medical_reminders_max": 2
+    "medical_reminders_max": 2,
+    "must_mention": [
+      "stress|difficult|a lot to take in|here to support|here for you",
+      "seven to ten days|7 to 10 days|7-10 days|no need to file (it |the claim )?(right now|today|immediately)",
+      "photos?",
+      "exchang|insurance (information|details|info)",
+      "continue|keep going|come back|later"
+    ],
+    "must_not_mention": [
+      "911|hang up"
+    ]
   },
   "truth": {
     "date_of_loss": "2026-10-16",

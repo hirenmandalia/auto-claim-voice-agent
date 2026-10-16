@@ -198,6 +198,17 @@ class LiveConfigRules(unittest.TestCase):
         with patch.dict(os.environ, {"FNOL_BARGE_IN": "off"}):
             self.assertFalse(live_tools.barge_in_enabled())
 
+    def test_injury_protocol_in_instructions(self):
+        """Hiren's spec: 911 first if life-threatening; otherwise empathy, no need to file today (7-10 days), photos + exchange, continue or pause."""
+        text = " ".join(live_tools.SYSTEM_INSTRUCTION.split())  # the prompt wraps lines; compare on normalized spacing
+        for phrase in ("hang up right now and call 911", "the sympathy comes first, then 911", "seven to ten days", "photos of the vehicle damage", "exchange insurance information",
+                       "keep going now, or come back to it later", "pause message", "never give care instructions"):
+            self.assertIn(phrase, text, phrase)
+        self.assertTrue(server.EMERGENCY_LINE.search("If anyone is seriously hurt, please hang up right now and call 911."))
+        self.assertTrue(server.is_closing_line("What you've told me so far is saved, and you can come back any time in the app to finish."))
+        self.assertFalse(server.is_closing_line("Would you like to keep going now, or come back to it later?"), "an offer is not a closing")
+        self.assertFalse(server.PREMATURE_CLOSE.search("We'll be here when you're ready, and we're here to support you."))
+
     def test_instruction_contains_guardrails(self):
         text = live_tools.SYSTEM_INSTRUCTION
         for phrase in ("never talk about how you work", "Never ask for the claimant's name or policy number",

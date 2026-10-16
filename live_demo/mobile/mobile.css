@@ -136,6 +136,7 @@ h2, h3, p { margin: 0; }
 .progress-fill { height: 100%; width: 0; background: var(--green); transition: width 400ms ease; }
 .claim-scroll { padding-top: 6px; }
 
+.emergency { background: var(--red); color: #fff; font-weight: 700; font-size: 15px; line-height: 1.4; padding: 14px 16px; border-radius: 14px; margin-bottom: 12px; box-shadow: 0 10px 24px rgba(229, 72, 77, 0.35); }
 .camera-stage { position: relative; border-radius: 18px; overflow: hidden; background: #000; aspect-ratio: 4 / 3; margin-bottom: 12px; }
 .camera-stage[hidden] { display: none; }
 .camera-stage video { width: 100%; height: 100%; object-fit: cover; display: block; }
