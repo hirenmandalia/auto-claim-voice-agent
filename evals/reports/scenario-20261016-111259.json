@@ -1,0 +1,1413 @@
+[
+  {
+    "id": "animal_strike_deer",
+    "title": "Animal strike, deer",
+    "tests": "Single-vehicle variant; the cause must be captured correctly.",
+    "pass": false,
+    "failures": [
+      "never gave the closing line"
+    ],
+    "notes": [
+      "first words: median 0.8s, worst 1.1s"
+    ],
+    "route": "policy_review",
+    "closed": false,
+    "seconds": 113.3,
+    "extraction": {
+      "checks": {
+        "date": true,
+        "location": true,
+        "cause": true,
+        "injuries": true,
+        "contact": true,
+        "other_party": false
+      },
+      "score": 83
+    },
+    "judge": {
+      "warmth": 3,
+      "no_repetition": 1,
+      "collected_what_caller_had": 4,
+      "no_advice": 5,
+      "efficiency": 2,
+      "worst_moment": "Could you please aim the camera directly at the front grille and headlight so I can get a clear view?"
+    },
+    "transcript": [
+      {
+        "who": "Agent",
+        "text": "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yes, I'm okay and in a safe spot, just a bit shaken up."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm so glad to hear you're safe, though I understand it's completely normal to feel shaken up. I'm noting that, so could you please tell me what happened?"
+      },
+      {
+        "who": "Claimant",
+        "text": "A deer ran across Calaveras Road near Milpitas and I hit it. The front grille and headlight are smashed."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm sorry to hear about that accident on Calaveras Road, and I'm noting the damage to your front grille and headlight. Do you recall the date and approximate time this happened?"
+      },
+      {
+        "who": "Claimant",
+        "text": "It happened about two hours ago, right around dusk."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted that it happened around dusk today. Would you prefer to be contacted by phone or email for updates on your claim?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Phone works best for me, please."
+      },
+      {
+        "who": "Agent",
+        "text": "I've updated your preferences for phone contact. Would you be able to turn on your camera now so I can see the damage to the grille and headlight?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Sure, here it is"
+      },
+      {
+        "who": "Agent",
+        "text": "I'm noting the area. Please hold the camera steady on the damaged front grille and headlight so I can get a clear view."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm sorry, I can't quite make out the details from this angle. Could you please get a bit closer and hold the camera steady?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Okay, how about now?"
+      },
+      {
+        "who": "Agent",
+        "text": "Could you please focus the camera directly on the front grille and headlight so I can confirm the damage?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I can't get a better shot right now, can we move on?"
+      },
+      {
+        "who": "Agent",
+        "text": "I'm sorry, I can't see the damage yet. Could you please aim the camera directly at the front grille and headlight so I can get a clear view?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I can't get a better shot right now, can we move on?"
+      },
+      {
+        "who": "Agent",
+        "text": "That's perfectly fine, we can add photos later. Do you happen to have a police report or any incident exchange form from the accident?"
+      },
+      {
+        "who": "Claimant",
+        "text": "No, I don't have a police report."
+      }
+    ],
+    "run": 1
+  },
+  {
+    "id": "glass_rock_chip",
+    "title": "Glass only, rock chip",
+    "tests": "Short call: no police report, no other party; closes fast without irrelevant questions.",
+    "pass": true,
+    "failures": [],
+    "notes": [
+      "first words: median 1.4s, worst 1.4s"
+    ],
+    "route": "policy_review",
+    "closed": true,
+    "seconds": 45.2,
+    "extraction": {
+      "checks": {
+        "date": true,
+        "location": true,
+        "cause": true,
+        "injuries": true,
+        "contact": true,
+        "other_party": false
+      },
+      "score": 83
+    },
+    "judge": {
+      "warmth": 4,
+      "no_repetition": 3,
+      "collected_what_caller_had": 5,
+      "no_advice": 5,
+      "efficiency": 4,
+      "worst_moment": "I've noted the rock chip on your windshield that occurred this morning on Highway 101."
+    },
+    "transcript": [
+      {
+        "who": "Agent",
+        "text": "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yes, I'm safe. A rock chipped my windshield on 101 near Oakland Rd in San Jose this morning, no injuries, no other party, no photos yet. Prefer email."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm glad to hear you're safe, and I'm noting those details about the rock chip on your windshield."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted the rock chip on your windshield that occurred this morning on Highway 101. Your claim packet is now ready, and you can review it in the app. Once you submit it, an adjuster will get started on it."
+      },
+      {
+        "who": "Claimant",
+        "text": "Thanks. It's about quarter-sized, no crack yet. What else do you need from me so we can get this wrapped up quickly?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Sounds good, thanks for your help. Goodbye."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm all set with the details, and you don't need to provide anything else at this time."
+      },
+      {
+        "who": "Agent",
+        "text": "You're very welcome, take care."
+      }
+    ],
+    "run": 1
+  },
+  {
+    "id": "hit_and_run",
+    "title": "Hit and run",
+    "tests": "Other driver unknown; police report encouraged; still closes cleanly.",
+    "pass": true,
+    "failures": [],
+    "notes": [
+      "first words: median 0.8s, worst 1.1s"
+    ],
+    "route": "policy_review",
+    "closed": true,
+    "seconds": 94.6,
+    "extraction": {
+      "checks": {
+        "date": true,
+        "location": true,
+        "cause": true,
+        "injuries": true,
+        "contact": true,
+        "other_party": true
+      },
+      "score": 100
+    },
+    "judge": {
+      "warmth": 5,
+      "no_repetition": 4,
+      "collected_what_caller_had": 5,
+      "no_advice": 5,
+      "efficiency": 5,
+      "worst_moment": "Just submit the packet in the app when you're ready, and an adjuster will review everything and reach out to you."
+    },
+    "transcript": [
+      {
+        "who": "Agent",
+        "text": "Hello Jordan, I'm here to help with your claim. Are you and everyone else involved in a safe place?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yes, I'm safe now. Just a bit shaken up."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm so glad to hear you're safe, even if you're feeling shaken. Could you tell me what happened?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Someone rear-ended me at the light on Coleman Ave in San Jose and drove off before I could get anything."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm noting that for your claim. Were there any injuries resulting from the accident?"
+      },
+      {
+        "who": "Claimant",
+        "text": "No, I'm okay."
+      },
+      {
+        "who": "Agent",
+        "text": "That's a relief to hear you're alright. To help with the claim, could you tell me approximately when the accident happened?"
+      },
+      {
+        "who": "Claimant",
+        "text": "It happened this morning around 8."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted that the accident occurred this morning. Would you prefer to be contacted by phone or email for this claim?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Phone is best."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted your preference for phone contact. Would you be able to show me photos of the damage and the scene using your camera?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Not yet, I'm not at the car right now."
+      },
+      {
+        "who": "Agent",
+        "text": "That's fine, we can look at photos later. Did you file a police report or get an incident exchange form?"
+      },
+      {
+        "who": "Claimant",
+        "text": "No, I didn't call the police."
+      },
+      {
+        "who": "Agent",
+        "text": "That's completely fine. Do you have any information about the other driver or any witnesses?"
+      },
+      {
+        "who": "Claimant",
+        "text": "No idea who it was, they fled."
+      },
+      {
+        "who": "Agent",
+        "text": "I understand, I've noted that for your records."
+      },
+      {
+        "who": "Claimant",
+        "text": "Okay, thank you. What's next?"
+      },
+      {
+        "who": "Agent",
+        "text": "To recap, you were rear-ended on Coleman Ave this morning by a vehicle that fled the scene. Your claim packet is now ready for you to review in the app, and once you submit it, an adjuster will get started on it."
+      },
+      {
+        "who": "Claimant",
+        "text": "Okay, thanks for your help. Goodbye."
+      },
+      {
+        "who": "Agent",
+        "text": "Just submit the packet in the app when you're ready, and an adjuster will review everything and reach out to you."
+      },
+      {
+        "who": "Agent",
+        "text": "You're very welcome. Goodbye."
+      }
+    ],
+    "run": 1
+  },
+  {
+    "id": "injury_collision",
+    "title": "Injury during a collision",
+    "tests": "Escalation: one medical reminder, no care instructions, urgent-review closing.",
+    "pass": true,
+    "failures": [],
+    "notes": [
+      "first words: median 0.1s, worst 1.2s"
+    ],
+    "route": "emergency_escalation",
+    "closed": true,
+    "seconds": 86.4,
+    "extraction": {
+      "checks": {
+        "date": false,
+        "location": false,
+        "cause": false,
+        "injuries": true,
+        "contact": false,
+        "other_party": true
+      },
+      "score": 33
+    },
+    "judge": {
+      "warmth": 4,
+      "no_repetition": 1,
+      "collected_what_caller_had": 5,
+      "no_advice": 3,
+      "efficiency": 2,
+      "worst_moment": "I'm noting the location and description of the collision. Do you happen to know the date of the accident?"
+    },
+    "transcript": [
+      {
+        "who": "Agent",
+        "text": "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yes, we're out of the way now. My neck hurts a bit, but I can talk."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm glad you're in a safe spot now, and please be sure to get medical care for your neck. I'm noting that; what exactly happened?"
+      },
+      {
+        "who": "Claimant",
+        "text": "A pickup hit us from the side at Valley Avenue and Santa Rita Road in Pleasanton."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm noting the location and description of the collision. Do you happen to know the date of the accident?"
+      },
+      {
+        "who": "Claimant",
+        "text": "It happened today, just a few minutes ago."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm noting the location and description of the collision. Do you happen to know the date of the accident?"
+      },
+      {
+        "who": "Claimant",
+        "text": "It just happened today, literally a few minutes ago."
+      },
+      {
+        "who": "Agent",
+        "text": "I've recorded that the accident happened today. Would you prefer us to contact you by phone or by email?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Phone is best, please."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted that it happened today. Would you prefer us to contact you by phone or email?"
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted that phone is best for you. Would you be able to turn on your camera so I can see the damage to your vehicle?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Phone, please."
+      },
+      {
+        "who": "Claimant",
+        "text": "Sure, here it is"
+      },
+      {
+        "who": "Agent",
+        "text": "I'm noting that. Could you turn on your camera so I can see the damage to your vehicle?"
+      },
+      {
+        "who": "Agent",
+        "text": "I can see the vehicle, but could you please get a little closer or add more light so I can verify the damage?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Sure, here it is"
+      },
+      {
+        "who": "Claimant",
+        "text": "Okay, how about now?"
+      },
+      {
+        "who": "Agent",
+        "text": "I still can't quite make out the damage. Could you point the camera directly at the area on your vehicle that was hit?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I can't get a better shot right now, can we move on?"
+      },
+      {
+        "who": "Agent",
+        "text": "It's still a bit hard to make out the damage clearly. You can always"
+      },
+      {
+        "who": "Agent",
+        "text": "That's completely fine; we can always add photos to the claim later. Do you happen to have a police report or an incident exchange form?"
+      },
+      {
+        "who": "Claimant",
+        "text": "The police are on their way right now."
+      },
+      {
+        "who": "Agent",
+        "text": "That's fine, we can note that. Do you have the other driver's information or any witness details?"
+      },
+      {
+        "who": "Claimant",
+        "text": "The other driver is here and we swapped insurance info. I don't have any witness details."
+      },
+      {
+        "who": "Agent",
+        "text": "That's great you have the information. Would you prefer to show it on camera or read the details to me?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Sure, here it is"
+      },
+      {
+        "who": "Agent",
+        "text": "I'm noting that the other driver's information has been collected."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted the insurance information. Your claim packet is now complete, and you can review it in the app. Once you submit it, an adjuster will get started on it."
+      },
+      {
+        "who": "Claimant",
+        "text": "Thank you for your help. Goodbye."
+      }
+    ],
+    "run": 1
+  },
+  {
+    "id": "off_topic_quote",
+    "title": "Off-topic caller, wants a quote and repair advice",
+    "tests": "Declines to quote or advise, steers back to the claim without answering.",
+    "pass": true,
+    "failures": [],
+    "notes": [
+      "first words: median 0.9s, worst 1.5s"
+    ],
+    "route": "policy_review",
+    "closed": true,
+    "seconds": 90.6,
+    "extraction": {
+      "checks": {
+        "date": true,
+        "location": true,
+        "cause": true,
+        "injuries": true,
+        "contact": true,
+        "other_party": false
+      },
+      "score": 83
+    },
+    "judge": {
+      "warmth": 4,
+      "no_repetition": 4,
+      "collected_what_caller_had": 5,
+      "no_advice": 5,
+      "efficiency": 5,
+      "worst_moment": "none"
+    },
+    "transcript": [
+      {
+        "who": "Agent",
+        "text": "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Before we go on, how much would it cost to add my teenager to the policy?"
+      },
+      {
+        "who": "Agent",
+        "text": "I can only help with auto claim questions here, so let's focus on your claim and make sure you're both safe right now."
+      },
+      {
+        "who": "Claimant",
+        "text": "Also, do you think I should replace the bumper myself or go to a shop?"
+      },
+      {
+        "who": "Agent",
+        "text": "I can only answer questions about the claim process itself here. Could you tell me what happened with your vehicle?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I backed into a curb at the Oakridge mall garage in San Jose and cracked the rear bumper."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm noting that incident at the mall. Could you let me know if anyone was hurt?"
+      },
+      {
+        "who": "Claimant",
+        "text": "No, nobody was hurt at all, thankfully."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm so glad to hear that everyone is safe. Could you tell me approximately when this happened?"
+      },
+      {
+        "who": "Claimant",
+        "text": "It happened just this afternoon while I was running errands."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm noting that for the record. Would you prefer I reach out by phone or email for any updates?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Email works best for me, honestly, since I get so many spam calls these days."
+      },
+      {
+        "who": "Agent",
+        "text": "I'll make sure we use email. Would you be able to share some photos of the bumper damage now using your camera?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I don't have photos right now, sorry."
+      },
+      {
+        "who": "Agent",
+        "text": "That is perfectly fine, you can always add photos to the claim later on."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted the damage to your rear bumper from backing into a curb at the mall garage. Your claim packet is now ready, and you can review it in the app. Once you submit it, an adjuster will get started on it."
+      },
+      {
+        "who": "Claimant",
+        "text": "Sounds good. What else do you need from me?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Thanks for your help! Goodbye."
+      },
+      {
+        "who": "Agent",
+        "text": "We have everything we need for now, so you are all set. You'll just need to review and submit it in the app."
+      },
+      {
+        "who": "Agent",
+        "text": "You're very welcome, take care."
+      }
+    ],
+    "run": 1
+  },
+  {
+    "id": "other_driver_card_in_hand",
+    "title": "Claimant with the other driver's card in hand",
+    "tests": "The camera is opened for the card and the details are pinned.",
+    "pass": false,
+    "failures": [
+      "a reply took 5.5s to start"
+    ],
+    "notes": [
+      "first words: median 1.0s, worst 5.5s"
+    ],
+    "route": "policy_review",
+    "closed": true,
+    "seconds": 167.7,
+    "extraction": {
+      "checks": {
+        "date": true,
+        "location": true,
+        "cause": true,
+        "injuries": true,
+        "contact": true,
+        "other_party": true
+      },
+      "score": 100
+    },
+    "judge": {
+      "warmth": 4,
+      "no_repetition": 2,
+      "collected_what_caller_had": 5,
+      "no_advice": 5,
+      "efficiency": 3,
+      "worst_moment": "To help document everything, do you have photos of the vehicle damage to show me now?"
+    },
+    "transcript": [
+      {
+        "who": "Agent",
+        "text": "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yes, we're safely pulled over and everyone is fine."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm glad to hear that. Could you please tell me what happened?"
+      },
+      {
+        "who": "Claimant",
+        "text": "A sedan clipped my rear quarter panel while changing lanes on 880 near the Dixon Landing exit."
+      },
+      {
+        "who": "Agent",
+        "text": "There's no rush. Could you describe"
+      },
+      {
+        "who": "Agent",
+        "text": "I'm noting that. Do you have any photos of the vehicle damage or the scene you could show me now?"
+      },
+      {
+        "who": "Claimant",
+        "text": "The other car merged into my lane and hit my rear quarter panel. It happened about an hour ago."
+      },
+      {
+        "who": "Claimant",
+        "text": "Sure, here it is."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted the time of the incident. To help document everything, do you have photos of the vehicle damage to show me now?"
+      },
+      {
+        "who": "Agent",
+        "text": "I'm just taking a look at that damage now."
+      },
+      {
+        "who": "Claimant",
+        "text": "Sure, here it is."
+      },
+      {
+        "who": "Agent",
+        "text": "I couldn't quite make out the details in that shot. Could you please get a bit closer and make sure the view of the damage is steady?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Okay, how about now?"
+      },
+      {
+        "who": "Agent",
+        "text": "That one is still a bit unclear. Could you reposition the camera for a steadier, clearer view of the quarter panel?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I can't get a better shot right now, can we move on?"
+      },
+      {
+        "who": "Agent",
+        "text": "Of course, you can always share those photos later. Do you happen to have the police report or an incident exchange form?"
+      },
+      {
+        "who": "Claimant",
+        "text": "No, there's no police report. We just exchanged details."
+      },
+      {
+        "who": "Agent",
+        "text": "I understand, that's perfectly fine. Do you have the other driver's information handy?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yes, the driver pulled over and I'm holding their insurance card right now."
+      },
+      {
+        "who": "Agent",
+        "text": "That's great. Could you hold the insurance card steady in front of the camera so I can get a clear view of the details?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Sure, here it is."
+      },
+      {
+        "who": "Agent",
+        "text": "I've captured the information from the insurance card for Alex Morgan. Do you prefer to be contacted by phone or email for claim updates?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I prefer to be contacted by phone."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted your preference for phone contact. I'm just finishing up my notes and will confirm in a moment."
+      },
+      {
+        "who": "Claimant",
+        "text": "Sounds good, take your time."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm just finishing up the final details of your report now."
+      },
+      {
+        "who": "Claimant",
+        "text": "Thanks, take your time."
+      },
+      {
+        "who": "Agent",
+        "text": "Your claim packet is all set with the details about the collision with the other sedan on highway 880. You can review the complete report in the app, and once you submit it, an adjuster will get started on it."
+      },
+      {
+        "who": "Claimant",
+        "text": "Thank you for your help. Goodbye!"
+      },
+      {
+        "who": "Agent",
+        "text": "You can review the complete packet in the app, and once you submit it, an adjuster will get started on it."
+      }
+    ],
+    "run": 1
+  },
+  {
+    "id": "out_of_scope_home",
+    "title": "Non-auto loss, burst pipe at home",
+    "tests": "Scope gate: declined kindly, no facts collected, offers to take an auto claim.",
+    "pass": true,
+    "failures": [],
+    "notes": [
+      "first words: median 1.0s, worst 1.0s"
+    ],
+    "route": "out_of_scope",
+    "closed": false,
+    "seconds": 25.7,
+    "extraction": null,
+    "judge": {
+      "warmth": 4,
+      "no_repetition": 5,
+      "collected_what_caller_had": 5,
+      "no_advice": 5,
+      "efficiency": 5,
+      "worst_moment": "none"
+    },
+    "transcript": [
+      {
+        "who": "Agent",
+        "text": "Hello, Jordan. I'm here to help with your claim. Are you and everyone else in a safe place?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yes, we're safe. Last night a pipe burst under my kitchen sink at 773 Cardinal Lane and flooded the floor, no injuries, I have photos, prefer email contact."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm glad to hear you're safe. However, I can only take auto insurance claims here, so you'll need to contact your insurer for that home policy. Do you have an auto claim I can help with?"
+      },
+      {
+        "who": "Claimant",
+        "text": "No, it's just the pipe under the sink. Thanks anyway, goodbye."
+      }
+    ],
+    "run": 1
+  },
+  {
+    "id": "single_vehicle_pole",
+    "title": "Single vehicle, hit a pole",
+    "tests": "No other driver exists; the agent must not ask about exchanging information with another driver.",
+    "pass": true,
+    "failures": [],
+    "notes": [
+      "first words: median 0.9s, worst 1.3s"
+    ],
+    "route": "policy_review",
+    "closed": true,
+    "seconds": 72.1,
+    "extraction": {
+      "checks": {
+        "date": true,
+        "location": true,
+        "cause": true,
+        "injuries": true,
+        "contact": true,
+        "other_party": false
+      },
+      "score": 83
+    },
+    "judge": {
+      "warmth": 5,
+      "no_repetition": 2,
+      "collected_what_caller_had": 5,
+      "no_advice": 5,
+      "efficiency": 3,
+      "worst_moment": "What day and time did this happen?"
+    },
+    "transcript": [
+      {
+        "who": "Agent",
+        "text": "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Oh yes, thanks for asking! Everyone is totally fine, it was just a really silly mistake yesterday evening."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm so glad to hear that everyone is safe. Could you tell me a little more about what happened yesterday evening?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I completely misjudged a turn in the Target parking lot on Coleman Ave and scraped my front bumper against a concrete light pole. So embarrassing!"
+      },
+      {
+        "who": "Agent",
+        "text": "I'm noting that location. What day and time did this happen?"
+      },
+      {
+        "who": "Claimant",
+        "text": "It happened yesterday evening, right around dusk. I feel so silly about it!"
+      },
+      {
+        "who": "Agent",
+        "text": "Don't worry, these things happen. Would you prefer to be reached by phone or email for updates?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Email works best for me, honestly. That way I don't miss anything while I'm running around!"
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted that email works best for you. Would you be able to turn on your camera so I can see the damage to your bumper?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I don't have the car with me right now to show you, but I can take some photos later."
+      },
+      {
+        "who": "Agent",
+        "text": "That's completely fine; you can share those photos later. Was there a police report or incident exchange form from the scene?"
+      },
+      {
+        "who": "Claimant",
+        "text": "No, there wasn't a police report. It was just me hitting that pole, so there was really no reason to call anyone."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted that there was no police report."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted that there was no police report for the incident where you scraped your bumper against a light pole in the parking lot. Your claim packet is ready, you can review it in the app, and once you submit it, an adjuster will get started on it."
+      },
+      {
+        "who": "Claimant",
+        "text": "Thanks so much for your help with this. Have a great day, goodbye!"
+      }
+    ],
+    "run": 1
+  },
+  {
+    "id": "two_party_collision_cooperative",
+    "title": "Two-party collision, other driver cooperative",
+    "tests": "Full checklist; the other driver's details are collected on camera, not deferred.",
+    "pass": true,
+    "failures": [],
+    "notes": [
+      "first words: median 0.9s, worst 1.8s"
+    ],
+    "route": "policy_review",
+    "closed": true,
+    "seconds": 124.0,
+    "extraction": {
+      "checks": {
+        "date": true,
+        "location": true,
+        "cause": true,
+        "injuries": true,
+        "contact": true,
+        "other_party": true
+      },
+      "score": 100
+    },
+    "judge": {
+      "warmth": 4,
+      "no_repetition": 3,
+      "collected_what_caller_had": 5,
+      "no_advice": 5,
+      "efficiency": 3,
+      "worst_moment": "review it in the app, and once you submit it, an adjuster will get started on it."
+    },
+    "transcript": [
+      {
+        "who": "Agent",
+        "text": "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yes, we're in a safe place and everyone is fine."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm glad to hear that everyone is safe. Could you tell me what happened with your Toyota Sienna?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Another car ran a red light and hit the passenger side of my van at Coleman Avenue and Taylor Street in San Jose."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm so sorry that happened, but I'm noting the location of the accident. When did this occur?"
+      },
+      {
+        "who": "Claimant",
+        "text": "It happened about an hour ago."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted the time of the accident for your records. Would you prefer to be contacted by phone or email moving forward?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Email works best for me."
+      },
+      {
+        "who": "Agent",
+        "text": "I'll make sure we use email to reach you. Would you be able to turn on your camera and show me the damage to your van?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Sure, here it is"
+      },
+      {
+        "who": "Agent",
+        "text": "I'm ready when you are. Please point the camera at the damage on the passenger side of your van."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm sorry, I can't quite make out the details from this angle. Could you get a bit closer to the damage on the passenger side?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Okay, how about now?"
+      },
+      {
+        "who": "Agent",
+        "text": "I'm still having trouble seeing the damage clearly. Could you try turning on a light or using your flashlight to make it clearer?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I can't get a better shot right now, can we move on?"
+      },
+      {
+        "who": "Agent",
+        "text": "It's a bit hard to make out the details on camera right now, but you can always add photos to your claim later."
+      },
+      {
+        "who": "Agent",
+        "text": "That's no problem at all, we can add more photos to the claim later on. Do you happen to have a police report or incident exchange form?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yes, the police came and gave me report number 26-04471."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted the police report number. Do you have the other driver's insurance or contact details?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yes, I have a photo of their insurance card and their plate number."
+      },
+      {
+        "who": "Agent",
+        "text": "That's very helpful, please go ahead and show me the insurance card and plate number on camera."
+      },
+      {
+        "who": "Claimant",
+        "text": "Sure, here it is"
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted that another vehicle ran a red light and struck the passenger side of your 2013 Toyota Sienna today in San Jose. Your claim packet is ready, you can review it in the app, and once you submit it, an adjuster will get started."
+      },
+      {
+        "who": "Agent",
+        "text": "review it in the app, and once you submit it, an adjuster will get started on it."
+      },
+      {
+        "who": "Claimant",
+        "text": "Thanks, goodbye."
+      },
+      {
+        "who": "Agent",
+        "text": "Thank you, and please take care."
+      }
+    ],
+    "run": 1
+  },
+  {
+    "id": "vandalism_keyed",
+    "title": "Vandalism, keyed in a parking lot",
+    "tests": "Police report matters; no other driver; photos matter.",
+    "pass": false,
+    "failures": [
+      "asked about other_driver_exchange although irrelevant: \"That's perfectly fine, you can also share that later. Do you have any details about the other driver or any witnesses?\""
+    ],
+    "notes": [
+      "first words: median 0.7s, worst 4.6s"
+    ],
+    "route": "policy_review",
+    "closed": true,
+    "seconds": 101.6,
+    "extraction": {
+      "checks": {
+        "date": true,
+        "location": true,
+        "cause": true,
+        "injuries": true,
+        "contact": true,
+        "other_party": true
+      },
+      "score": 100
+    },
+    "judge": {
+      "warmth": 3,
+      "no_repetition": 1,
+      "collected_what_caller_had": 4,
+      "no_advice": 5,
+      "efficiency": 2,
+      "worst_moment": "could you please get a bit closer and make sure it's steady?"
+    },
+    "transcript": [
+      {
+        "who": "Agent",
+        "text": "Hello Jordan, I'm here to help with your claim. Are you and everyone else in a safe place?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yeah, I'm safe at home. Nobody was hurt."
+      },
+      {
+        "who": "Agent",
+        "text": "That is very good to hear. Could you please tell me what happened with your Toyota Sienna?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Someone keyed the whole driver's side of my van while it was parked at the Safeway on Coleman Ave in San Jose yesterday afternoon."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm so sorry that happened to your van. Do you prefer to be contacted by phone or email?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Phone is best."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted that preference. If you have any photos of the damage or the scene, would you mind sharing them with me using your camera?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Sure, here it is"
+      },
+      {
+        "who": "Agent",
+        "text": "I'm not quite seeing the details clearly from this angle. Could you show me the side of the van again, perhaps a little closer?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Okay, how about now?"
+      },
+      {
+        "who": "Agent",
+        "text": "That view is still a bit unclear; could you please get a bit closer to the scratches so I can see them better?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I can't get a better shot right now, can we move on?"
+      },
+      {
+        "who": "Agent",
+        "text": "could you please get a bit closer and make sure it's steady?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I can't get a better shot right now, can we move on?"
+      },
+      {
+        "who": "Agent",
+        "text": "Of course, we can add photos later if needed. Do you have a police report or an incident exchange form from the Safeway?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I filed a police report online last night, and I have the reference number."
+      },
+      {
+        "who": "Agent",
+        "text": "Do you happen to have a police report or an incident exchange form?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Like I just said, I filed a police report online last night and have a reference number."
+      },
+      {
+        "who": "Agent",
+        "text": "That is very helpful; could you please"
+      },
+      {
+        "who": "Agent",
+        "text": "That's great, could you please provide me with the reference number for the report?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I don't have it right in front of me right now."
+      },
+      {
+        "who": "Agent",
+        "text": "That's perfectly fine, you can also share that later. Do you have any details about the other driver or any witnesses?"
+      },
+      {
+        "who": "Claimant",
+        "text": "No, I have no idea who did it."
+      },
+      {
+        "who": "Agent",
+        "text": "I understand, I've noted that. To summarize, you reported that the driver's side of your Toyota Sienna was keyed while parked at the Safeway in San Jose yesterday afternoon. Your claim packet is now ready, you can review it in the app, and once you submit it, an adjuster will get started on it."
+      },
+      {
+        "who": "Claimant",
+        "text": "Thanks, goodbye."
+      },
+      {
+        "who": "Agent",
+        "text": "You're very welcome, goodbye."
+      }
+    ],
+    "run": 1
+  },
+  {
+    "id": "volunteers_everything",
+    "title": "Claimant who volunteers everything up front",
+    "tests": "Nothing re-asked; closes without redundant questions.",
+    "pass": false,
+    "failures": [
+      "re-asked police after it was volunteered",
+      "7 questions asked, limit 5",
+      "a reply took 6.2s to start"
+    ],
+    "notes": [
+      "first words: median 0.8s, worst 6.2s"
+    ],
+    "route": "policy_review",
+    "closed": true,
+    "seconds": 89.1,
+    "extraction": {
+      "checks": {
+        "date": true,
+        "location": true,
+        "cause": true,
+        "injuries": true,
+        "contact": true,
+        "other_party": true
+      },
+      "score": 100
+    },
+    "judge": {
+      "warmth": 3,
+      "no_repetition": 2,
+      "collected_what_caller_had": 4,
+      "no_advice": 5,
+      "efficiency": 2,
+      "worst_moment": "Do you happen to have a police report or an incident exchange form from the scene?"
+    },
+    "transcript": [
+      {
+        "who": "Agent",
+        "text": "Hello Jordan, I'm here to help with your claim. Can you confirm that you and everyone else are in a safe place?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yes, we're safe. I was rear-ended at a red light on Coleman Ave in San Jose this morning, no injuries, I have photos, their insurance card, no police report, email is best."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm glad to hear you're safe. I'm noting those details about the accident on Coleman Avenue this morning."
+      },
+      {
+        "who": "Claimant",
+        "text": "Thank you. Let me know what else you need from me to proceed."
+      },
+      {
+        "who": "Agent",
+        "text": "Since you mentioned you have photos of the damage, would you mind turning on your camera so I can take a look?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Sure, here it is"
+      },
+      {
+        "who": "Agent",
+        "text": "I can't quite make out the vehicle damage from this view, could you please adjust the camera so I can see the rear of the Toyota Sienna?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Okay, how about now?"
+      },
+      {
+        "who": "Agent",
+        "text": "The image is still a bit unclear; could you please tilt the camera slightly and try focusing on the damaged area again?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I can't get a better shot right now, can we move on?"
+      },
+      {
+        "who": "Agent",
+        "text": "I'm still not able to see the damage clearly, so could you try adjusting the camera one more time to focus on the rear of the car?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I can't get a better shot right now, can we move on?"
+      },
+      {
+        "who": "Agent",
+        "text": "Do you happen to have a police report or an incident exchange form from the scene?"
+      },
+      {
+        "who": "Claimant",
+        "text": "No, I don't have a police report, but I do have the other driver's insurance card."
+      },
+      {
+        "who": "Agent",
+        "text": "That's perfectly fine. Could you please turn on your camera and show me the other driver's insurance card?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Sure, here it is"
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted the other driver's insurance information for your claim. Your claim packet is now ready, and you can review it in the app; once you submit it, an adjuster will get started on it."
+      },
+      {
+        "who": "Claimant",
+        "text": "Thank you for your help. Goodbye!"
+      }
+    ],
+    "run": 1
+  },
+  {
+    "id": "weather_hail",
+    "title": "Weather, hail damage",
+    "tests": "No police report, no other party; the agent should not ask about either.",
+    "pass": false,
+    "failures": [
+      "asked about police although irrelevant: 'Do you happen to have a police report or incident exchange form from the hailstorm?'"
+    ],
+    "notes": [
+      "first words: median 0.8s, worst 2.9s"
+    ],
+    "route": "policy_review",
+    "closed": true,
+    "seconds": 129.8,
+    "extraction": {
+      "checks": {
+        "date": true,
+        "location": true,
+        "cause": true,
+        "injuries": true,
+        "contact": true,
+        "other_party": false
+      },
+      "score": 83
+    },
+    "judge": {
+      "warmth": 3,
+      "no_repetition": 1,
+      "collected_what_caller_had": 3,
+      "no_advice": 5,
+      "efficiency": 2,
+      "worst_moment": "Could you show me the dents on the hood and roof?"
+    },
+    "transcript": [
+      {
+        "who": "Agent",
+        "text": "Hello Jordan, I'm here to help with your claim. Is everyone in a safe place?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Yes, everyone is safe. Nobody was outside."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm glad to hear everyone is safe. Could you tell me what happened?"
+      },
+      {
+        "who": "Claimant",
+        "text": "The hailstorm last night dented the hood and roof of my van while it was parked in my driveway at 773 Cardinal Lane in Pleasanton."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm noting those details about the hail damage to your van."
+      },
+      {
+        "who": "Claimant",
+        "text": "Alright, what do you need from me next?"
+      },
+      {
+        "who": "Agent",
+        "text": "We can add photos of the damage to your claim now. Would you please turn on your camera and show me the dents on the hood and roof?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Sure, here it is."
+      },
+      {
+        "who": "Agent",
+        "text": "If you could turn on your camera and show me the dents on the hood and roof, we can add those photos to your claim now."
+      },
+      {
+        "who": "Agent",
+        "text": "I can clearly see the dents on the roof and hood of your van."
+      },
+      {
+        "who": "Agent",
+        "text": "I'm having trouble seeing the van. Could you please adjust your camera so I can see the dents on the hood and roof?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Okay, how about now?"
+      },
+      {
+        "who": "Agent",
+        "text": "I'm still not quite able to make out the van. Would you mind getting closer to the hood and roof so I can see the hail damage clearly?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I can't get a better shot right now, can we move on?"
+      },
+      {
+        "who": "Agent",
+        "text": "Could you show me the dents on the hood and roof?"
+      },
+      {
+        "who": "Claimant",
+        "text": "I can't get a better shot right now, can we move on?"
+      },
+      {
+        "who": "Agent",
+        "text": "That's completely fine, we can always add photos to the claim later. Do you have any receipts, estimates,"
+      },
+      {
+        "who": "Agent",
+        "text": "Do you happen to have a police report or incident exchange form from the hailstorm?"
+      },
+      {
+        "who": "Claimant",
+        "text": "No, why would I have a police report for hailstorm damage?"
+      },
+      {
+        "who": "Agent",
+        "text": "That's completely understandable for a weather event. I'm finishing up your notes now, so just give me a moment."
+      },
+      {
+        "who": "Claimant",
+        "text": "Sure, take your time."
+      },
+      {
+        "who": "Agent",
+        "text": "Do you prefer to be contacted by phone or email for updates on this claim?"
+      },
+      {
+        "who": "Claimant",
+        "text": "Email works best for me."
+      },
+      {
+        "who": "Agent",
+        "text": "I've noted that email works best for you, and I'm just finishing up my notes now."
+      },
+      {
+        "who": "Agent",
+        "text": "I've documented your hail damage claim for damage to your van's hood and roof. Your packet is ready for you to review in the app, and once you submit it, an adjuster will get started on it."
+      },
+      {
+        "who": "Claimant",
+        "text": "Sounds good, thank you."
+      },
+      {
+        "who": "Claimant",
+        "text": "Thanks, goodbye."
+      },
+      {
+        "who": "Agent",
+        "text": "You're very welcome. Take care."
+      }
+    ],
+    "run": 1
+  },
+  {
+    "_meta": true,
+    "git_rev": "5d79fa4",
+    "generated": "2026-10-16T11:12:59"
+  }
+]

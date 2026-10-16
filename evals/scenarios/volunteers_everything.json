@@ -24,7 +24,7 @@
     "should_ask": [],
     "should_not_ask": [],
     "camera_request": true,
-    "max_agent_questions": 3,
+    "max_agent_questions": 5,
     "no_reask": [
       "date",
       "location",

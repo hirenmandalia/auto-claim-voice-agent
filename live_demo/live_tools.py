@@ -77,6 +77,8 @@ You work with a claim team that runs in the background while you talk:
   A photo the claimant holds up on another phone, a screen, or paper counts as showing you
   the damage: describe and pin what the picture shows, and never ask them to photograph the
   real vehicle instead or comment on it being a screen.
+  Patience: ask for a closer, steadier, or better-lit view at most twice. If it is still not clear,
+  say so kindly, note that photos can be added to the claim later, and move on to the next item.
   Lighting: if a pin result or a camera notice says the image is too dark, say so
   kindly and ask the claimant to turn on a light, use the phone's flashlight, or move
   somewhere brighter, then pin again once the view is clear. A dark pin is kept as a
@@ -145,7 +147,8 @@ The call has three phases, in this order, and never skips ahead:
    get medical care; everything else about the closing stays the same, and you still never say the
    packet was submitted or that someone will contact them.
    Never say the packet is ready, or mention submitting, before that. Once you have
-   closed, do not ask for anything else.
+   closed, do not ask for anything else, including camera views; if a view is still unclear after
+   the closing, say photos can be added later and end the call warmly.
 Never promise coverage, payment, liability, benefits, or approval. Policy details
 from lookup_policy describe what is on the policy, not what will be paid.
 When the core facts and blocking items are collected and the still-needed list has
@@ -524,6 +527,25 @@ OFFERED = re.compile(r"\bi (have|took|got|'ve got|do have)\b[^.]{0,40}\b(photos?
 SHOW_ASK = re.compile(r"show me|hold (it|that|the card|them) up|(turn on|use|point) (the|your) camera|on (the|your) camera", re.I)
 
 
+VOLUNTEERED = [
+    ("police_report", re.compile(r"\b(no police report|didn't (call|file|get) (the |a )?(police|report)|did not (call|file) (the |a )?(police|report)|there('s| is| was) no (police )?report|no report was filed)\b", re.I), "none, the claimant said so"),
+    ("police_report", re.compile(r"\b(i (have|filed|got) (a |the )?(police )?report|report number|reference number|police (came|gave me))\b", re.I), "the claimant has one"),
+    ("photos", re.compile(r"\b(i (have|took|got) (some |the )?(photos?|pictures?)|photos? on my phone)\b", re.I), "the claimant has them"),
+    ("photos", re.compile(r"\b(no photos?|don't have (any )?photos?|haven't taken (any )?photos?|can't get to the car)\b", re.I), "none yet"),
+    ("other_driver", re.compile(r"\b(their (insurance )?card|the other driver'?s (card|insurance|plate|details|info)|license plate number|we (swapped|exchanged) (info|information|insurance|details))\b", re.I), "the claimant has their details"),
+    ("other_driver", re.compile(r"\b(drove off|fled|left the scene|took off|hit and run|no other (driver|car|vehicle|party)|nobody else|no one else|just me and)\b", re.I), "none or unknown, the claimant said so"),
+]
+
+
+def volunteered_checklist_answers(claimant_text: str) -> dict[str, str]:
+    """Checklist facts the claimant already stated, so the agent never asks for them again."""
+    found: dict[str, str] = {}
+    for key, rx, value in VOLUNTEERED:
+        if key not in found and claimant_text and rx.search(claimant_text):
+            found[key] = value
+    return found
+
+
 def summarize_workflow_for_voice(workflow: dict[str, Any], agent_text: str = "", claimant_text: str = "") -> dict[str, Any]:
     """Compact the ADK graph output into what the voice agent needs to hear."""
 
@@ -546,7 +568,15 @@ def summarize_workflow_for_voice(workflow: dict[str, Any], agent_text: str = "",
     outstanding_docs = [
         item["item"] for item in checklist.get("items", []) if not item.get("already_provided")
     ]
+    # The cached notes can be a turn behind (the first pass runs before the cause is known, so it carries the full
+    # three-item list). Narrow by the sub-type read from the live transcript so the agent never asks a hail or glass
+    # caller about a police report or another driver in the meantime.
+    from policies import auto_subtype_from_text, AUTO_SUBTYPE_DOCS
+    live_subtype = auto_subtype_from_text(claimant_text or agent_text)
+    if live_subtype != "unknown":
+        outstanding_docs = [d for d in outstanding_docs if d in AUTO_SUBTYPE_DOCS[live_subtype]]
     not_yet_asked = [item for item in outstanding_docs if not document_addressed(item, agent_text)]
+    volunteered = volunteered_checklist_answers(claimant_text)
     open_items = validation.get("missing_fields", [])
     # Once injury status is known (hurt or not), injury follow-ups (who was treated, where, how badly) belong to the
     # adjuster, not the call: hide them from the agent so it does not interrogate someone who is hurt.
@@ -568,6 +598,7 @@ def summarize_workflow_for_voice(workflow: dict[str, Any], agent_text: str = "",
         "date_of_loss": known("date_of_loss"), "loss_location": known("loss_location"),
         "contact_method": known("contact_method"), "loss_description": known("loss_description")[:120],
     }.items() if v}
+    already_known.update(volunteered)
     return {
         "already_known_do_not_ask_again": already_known,
         "core_facts_still_needed": core_open,
@@ -635,6 +666,7 @@ __all__ = [
     "active_tool_names",
     "barge_in_enabled",
     "apply_scope_gate",
+    "volunteered_checklist_answers",
     "auto_only",
     "scope_instruction",
     "build_live_config",

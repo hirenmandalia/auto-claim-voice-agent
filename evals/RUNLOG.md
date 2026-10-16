@@ -6,9 +6,25 @@ to the per-run reports, so the numbers and the story sit together.
 
 Format: `## <date> · <run> · <result>` then **Findings** / **Fixes** / **Commit** lines.
 
-## 2026-10-16 · scenarios, second run · in progress
-**Run:** `evals/run_scenario_evals.py`, all twelve personas, after the first run's fixes.
+## 2026-10-16 · scenarios, third run · in progress
+**Run:** `evals/run_scenario_evals.py`, all twelve personas, after the second run's fixes.
 **Findings:** pending.
+
+## 2026-10-16 · scenarios, second run · 4/12 passed · extraction 78%
+**Run:** `evals/run_scenario_evals.py` (report `scenario-20261016-105144.json`), after the first run's fixes.
+**Findings:** glass, hit-and-run, single-vehicle and the declined home claim now pass (sub-type checklist and decline
+route confirmed). New causes behind the rest: the agent never gives up on an unclear camera view (ten or more "get
+closer, more light" requests in a row, which also blew the turn budget and produced one 24 s reply); an off-topic
+decline ("I can only help with auto claim questions here") was mistaken for a declined claim and routed the curb-scrape
+call out of scope; the closing fired while the claimant was still showing the camera, so the agent asked for a better
+view after the closing line; one injured-caller run stalled after the second answer with no reply from the agent (the
+guard caught the model narrating its own plan); the volunteers-everything limit of three questions was too tight once
+the agent correctly asks to see the offered photos and card.
+**Fixes:** camera patience capped at two adjustment requests (`CAMERA_RETRY` + move-on prompt, prompt rule);
+`SCOPE_DECLINE` only counts a decline that names a non-auto policy; closing prompt waits while the camera is on and no
+camera requests after the close; a dropped silence placeholder still owes a reply when the claimant just spoke; the
+simulator now gives up on the camera after two requests like a real caller; volunteers limit raised to five.
+**Commit:** pending.
 
 ## 2026-10-16 · scenarios, first run · 3/12 passed · extraction 87%
 **Run:** `evals/run_scenario_evals.py` (report `scenario-20261016-102655.json`). First time the twelve persona scenarios ran.

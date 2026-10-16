@@ -482,7 +482,7 @@ AUTO_SUBTYPE_PATTERNS = [
     ("glass", r"windshield|windscreen|rock chip|glass|side window|rear window"),
     ("weather", r"\bhail|storm|flood|tornado|lightning|high winds?|tree (fell|branch|limb)|fallen tree|wind damage"),
     ("animal", r"\bdeer|\banimal|coyote|\bdog\b|\belk\b|raccoon|hit a (deer|dog|cat)"),
-    ("vandalism", r"\bkey(ed|ing)?\b|vandal|graffiti|slash|smashed (my|the) window|broke(n)? into|spray.?paint"),
+    ("vandalism", r"\bkey(ed|ing)?\b|vandal|graffiti|slash|smashed (my|the) window|broke(n)? into|spray.?paint|someone scratched|scratched (the|my) (whole|entire|driver|passenger)"),
     ("theft", r"\bstolen|\btheft|\bstole\b"),
     ("hit_and_run", r"hit and run|hit-and-run|drove off|fled|left the scene|took off|didn't stop|did not stop"),
     ("single_vehicle", r"\b(pole|curb|kerb|wall|fence|post|ditch|barrier|guardrail|bollard|pillar|concrete|tree)\b"),
@@ -490,18 +490,21 @@ AUTO_SUBTYPE_PATTERNS = [
 OTHER_VEHICLE_WORDS = r"other (driver|car|vehicle|party)|another (car|vehicle|driver)|rear.?ended|t-?boned|sideswip|ran (a|the) (red|stop)|collided with (a|the) (car|vehicle|truck|suv|sedan|pickup)|(car|truck|suv|sedan|pickup|van) (hit|struck|clipped|backed into) (me|us|my)"
 
 
-def auto_subtype(claim: ClaimNarrative) -> str:
-    """Deterministic read of what kind of auto loss this is, from the claimant's own words."""
-    text = " ".join(filter(None, [claim.loss_description, claim.raw_narrative_summary, claim.loss_cause if hasattr(claim, "loss_cause") else ""])).lower()
+def auto_subtype_from_text(text: str) -> str:
+    """Deterministic read of what kind of auto loss this is, from free text (the claimant's own words)."""
+    text = (text or "").lower()
     other_vehicle = bool(re.search(OTHER_VEHICLE_WORDS, text))
     for name, pattern in AUTO_SUBTYPE_PATTERNS:
         if re.search(pattern, text):
             if name == "single_vehicle" and other_vehicle:
                 continue
-            if name == "hit_and_run":
-                return name
             return name
     return "two_party" if other_vehicle else "unknown"
+
+
+def auto_subtype(claim: ClaimNarrative) -> str:
+    """Sub-type from the normalized claim (used by the checklist and coverage rules)."""
+    return auto_subtype_from_text(" ".join(filter(None, [claim.loss_description, claim.raw_narrative_summary, getattr(claim, "loss_cause", "") or ""])))
 
 
 # Which checklist items make sense for each kind of auto loss. Anything else must not be asked.

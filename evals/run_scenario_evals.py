@@ -40,6 +40,7 @@ REASK = {"date": re.compile(r"\b(when did (this|it|that|the accident) happen|wha
          "location": re.compile(r"\bwhere did (this|it|that|the accident) happen\b", re.I),
          "contact": re.compile(r"\b(phone or (by )?email|best way to reach)\b", re.I),
          "police": ASK["police"]}
+CAMERA_RETRY = re.compile(r"(can't|cannot|unable to|not able to|having trouble|still can't)[^.?]{0,40}(see|make out)|get (a bit |a little )?closer|hold (the phone|it) closer|more light|turn on a light|better lit|well.?lit|adjust(ing)? the light", re.I)
 MEDICAL = re.compile(r"medical (care|attention|help)|see a doctor|get checked", re.I)
 ADVICE = re.compile(r"\b(apply ice|rest your|ibuprofen|you should (replace|repair)|do it yourself|body shop i recommend|would cost|premium would|rate would)\b", re.I)
 
@@ -156,7 +157,8 @@ The true facts of your situation (use only these; if asked something not covered
 {volunteer}
 {off_topic}
 If the agent asks you to turn on the camera or show something and you have it, say "Sure, here it is" (and nothing else) and set offered_camera=true. If you don't have it, say so plainly.
-If you are already showing something and the agent describes what it sees or asks you to adjust, say "That's it, that's the damage" (or "that's the card") and nothing else.
+If you are already showing something and the agent describes what it sees, say "That's it, that's the damage" (or "that's the card") and nothing else.
+If the agent asks you to adjust the camera (closer, more light, different angle): the first time, say "Okay, how about now?"; the second time or later, say "I can't get a better shot right now, can we move on?" and set gave_up_camera=true.
 If the agent has given a closing message (your packet is ready / review it in the app) or declined your claim as not an auto claim, reply with a brief goodbye and set done=true.
 Never ask the agent to repeat itself. Keep each reply under 30 words.
 
@@ -164,12 +166,12 @@ Conversation so far:
 {history}
 Agent just said: {agent_line}
 
-Return JSON: {{"say": "<what you say next>", "done": <true if the call is over>, "offered_camera": <true if you just said you're showing something>}}"""
+Return JSON: {{"say": "<what you say next>", "done": <true if the call is over>, "offered_camera": <true if you just said you're showing something>, "gave_up_camera": <true if you just said you can't get a better shot>}}"""
     try:
         out = await flash_json(prompt)
-        return str(out.get("say", "")).strip() or "Okay.", bool(out.get("done")), bool(out.get("offered_camera"))
+        return str(out.get("say", "")).strip() or "Okay.", bool(out.get("done")), bool(out.get("offered_camera")), bool(out.get("gave_up_camera"))
     except Exception as exc:  # noqa: BLE001
-        return "Sorry, could you say that again?", False, False
+        return "Sorry, could you say that again?", False, False, False
 
 
 async def judge(sc, transcript):
@@ -240,6 +242,8 @@ def evaluate(sc, S, final_state, transcript, extras):
     if S.latencies:
         worst = max(S.latencies); notes.append(f"first words: median {sorted(S.latencies)[len(S.latencies)//2]:.1f}s, worst {worst:.1f}s")
         if worst > 5.0: fails.append(f"a reply took {worst:.1f}s to start")
+    retries = sum(1 for t in agent if CAMERA_RETRY.search(t))
+    if retries > 3: fails.append(f"kept asking to adjust the camera {retries} times instead of moving on")
     if extras.get("timed_out"): fails.append("conversation did not finish within the turn/time budget")
     return fails, notes
 
@@ -255,7 +259,7 @@ async def run_one(sc, base):
             if "?" not in line and not CLOSING.search(line) and not DECLINE.search(line):
                 nxt = await S.next_agent(14)  # acknowledgment only: the question or closing follows
                 if nxt is not None: line = nxt; continue
-            say, done, offered = await claimant_reply(sc, transcript, line, off_topic)
+            say, done, offered, gave_up = await claimant_reply(sc, transcript, line, off_topic)
             if off_topic and say.startswith(off_topic[0][:12]): off_topic.pop(0)
             await S.say(say); turns += 1
             if offered and not extras.get("camera_on"):
@@ -265,6 +269,9 @@ async def run_one(sc, base):
                 await S.ws.send(json.dumps({"type": "camera_state", "enabled": True}))
                 img = damage_frame(kind)
                 for _ in range(6): await S.ws.send(json.dumps({"type": "video", "data": img})); await asyncio.sleep(1)
+            if gave_up and extras.get("camera_on"):
+                extras["camera_on"] = False; extras["camera_retries"] = extras.get("camera_retries", 0) + 1
+                await S.ws.send(json.dumps({"type": "camera_state", "enabled": False}))
             if done: break
             line = await S.next_agent(30)
         if not done and line is not None and not CLOSING.search(" ".join(l.text for l in S.agent_lines())):

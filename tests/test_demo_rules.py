@@ -136,6 +136,22 @@ class ClosingGate(unittest.TestCase):
         self.assertEqual(s["core_facts_still_needed"], ["date_of_loss"])
         self.assertFalse(s["closing_allowed"])
 
+    def test_live_subtype_narrows_checklist_before_notes_catch_up(self):
+        """Scenario run 3: hail and keyed-van callers were asked about police/other driver because the cached notes were a turn behind."""
+        claimant = "The hailstorm last night dented the hood and roof of my van in my driveway."
+        s = live_tools.summarize_workflow_for_voice(workflow(), "Agent: what happened?", claimant)
+        self.assertEqual(s["documents_not_yet_asked_about"], ["Photos of vehicles and scene"])
+        claimant2 = "Someone keyed the whole driver's side of my van at Safeway."
+        s2 = live_tools.summarize_workflow_for_voice(workflow(), "Agent: what happened?", claimant2)
+        self.assertEqual(s2["documents_not_yet_asked_about"], ["Photos of vehicles and scene", "Police report or incident exchange form"])
+
+    def test_volunteered_answers_are_already_known(self):
+        """Scenario run 3: 'no police report' volunteered up front was asked again."""
+        v = live_tools.volunteered_checklist_answers("I was rear-ended, no injuries, I have photos and their insurance card, no police report, email is best")
+        self.assertEqual(v["police_report"], "none, the claimant said so"); self.assertEqual(v["photos"], "the claimant has them"); self.assertEqual(v["other_driver"], "the claimant has their details")
+        s = live_tools.summarize_workflow_for_voice(workflow(), "", "no police report")
+        self.assertIn("police_report", s["already_known_do_not_ask_again"])
+
     def test_offered_photos_block_closing_until_asked_to_show(self):
         """Scenario run: the agent closed although the caller said they had photos and the other driver's card."""
         convo = "Agent: photos? police? other driver? Claimant: I have photos and their insurance card, no police report"
@@ -236,7 +252,12 @@ class ServerHelpers(unittest.TestCase):
 
     def test_scope_decline_detected(self):
         self.assertTrue(server.SCOPE_DECLINE.search("I'm so sorry about your kitchen, but I can only take auto insurance claims here."))
+        self.assertTrue(server.SCOPE_DECLINE.search("Since I can only take auto insurance claims, you'll need to contact your insurer for that homeowners policy."))
+        self.assertFalse(server.SCOPE_DECLINE.search("I can only help with auto claim questions here. Are you and everyone else safe?"), "off-topic decline is not a declined claim")
         self.assertFalse(server.SCOPE_DECLINE.search("I've noted the damage to your van."))
+        for t in ("I'm sorry, I still can't make out the damage. Could you get a little closer?", "Could you turn on a light?"):
+            self.assertTrue(server.CAMERA_RETRY.search(t), t)
+        self.assertFalse(server.CAMERA_RETRY.search("I can see the dent on the sliding door."))
 
     def test_silence_placeholders_and_camera_asks(self):
         """Incidents: the agent said 'No speech' aloud; 'you can provide that in the app' instead of opening the camera."""

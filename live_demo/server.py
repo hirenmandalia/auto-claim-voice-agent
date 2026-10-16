@@ -107,7 +107,11 @@ PREMATURE_CLOSE = re.compile(r"\b(being submitted|has been submitted|is (now )?s
 # Documents that are not on the auto checklist. The prompt forbids asking for them; this backstop cuts the question.
 OFF_CHECKLIST_ASK = re.compile(r"\b(repair )?(estimates?|receipts?|invoices?|medical (records?|bills?|documentation|documents?)|mileage|odometer|VIN)\b.*\?", re.IGNORECASE | re.DOTALL)
 # The agent declined a non-auto loss. Even with no facts collected, the app must show "Auto claims only".
-SCOPE_DECLINE = re.compile(r"only (take|handle|help with|accept)[^.]{0,40}auto|auto (insurance )?claims only|can only (take|help with) auto|not an auto (insurance )?claim|contact (your|the) insurer for (your|that|the) (home|renters|health|travel|life|pet|other)", re.IGNORECASE)
+# Only a declined NON-AUTO LOSS counts (home, renters, health, travel, life, pet, property). Declining an off-topic
+# question ("I can only help with auto claim questions here") is normal conduct and must not change the route.
+SCOPE_DECLINE = re.compile(r"(only (take|handle|accept)[^.]{0,40}auto (insurance )?claims|not an auto (insurance )?claim|contact (your|the) insurer for (your|that|the|this))[^.]{0,80}\b(home|homeowners?|renters?|condo|property|health|medical|travel|life|pet|flood|pipe|kitchen|house|apartment)\b|\b(home|homeowners?|renters?|condo|property|health|medical|travel|life|pet|flood|pipe|kitchen|house|apartment)\b[^.]{0,120}(only (take|handle|accept)[^.]{0,40}auto (insurance )?claims|not an auto (insurance )?claim|contact (your|the) insurer for (your|that|the|this))", re.IGNORECASE)
+# The agent asked the claimant to adjust the camera again. Two tries is plenty; after that it must move on.
+CAMERA_RETRY = re.compile(r"(can't|cannot|unable to|not able to|having trouble|still can't)[^.?]{0,40}(see|make out)|get (a bit |a little )?closer|hold (the phone|it) closer|more light|turn on a light|better lit|well.?lit|adjust(ing)? the light", re.IGNORECASE)
 CLOSING_LINE = re.compile(r"packet is (now )?ready|review (it )?in the app|once you submit", re.IGNORECASE)
 # The agent must speak English; a transcript chunk in another script means the voice drifted (seen: Spanish, Devanagari).
 NON_LATIN = re.compile(r"[\u0400-\u04FF\u0590-\u05FF\u0600-\u06FF\u0900-\u0DFF\u0E00-\u0E7F\u3040-\u30FF\u3400-\u9FFF\uAC00-\uD7AF]")
@@ -272,6 +276,7 @@ class IntakeSession:
     closing_allowed_latest: bool = False
     closed: bool = False   # the agent has spoken the closing line; stays true even if later notes reshuffle
     declined_scope: bool = False
+    camera_retries: int = 0
     quality_task: Any = None
     quality_notified_at: float = 0.0
     dark_notice_active: bool = False
@@ -927,6 +932,7 @@ def camera_quality_notice(issue: str) -> str:
 
 def _reset_lighting(session: IntakeSession) -> None:
     session.dark_streak, session.dark_notice_active = 0, False
+    session.camera_retries = 0
 
 
 def set_camera_mode(session: IntakeSession, enabled: bool) -> bool:
@@ -935,7 +941,9 @@ def set_camera_mode(session: IntakeSession, enabled: bool) -> bool:
         session.camera_enabled = enabled
         session.camera_mode_revision += 1
     if not enabled:
-        # Turning off the camera makes old frames unavailable for subsequent captures.
+        # Turning off the camera makes old frames unavailable for subsequent captures. If the claim was ready to
+        # close while the camera was on, the next notes cycle (or the agent itself) can close it now.
+        session.closing_nudged = False if not session.closed else session.closing_nudged
         _reset_lighting(session)
         session.last_frame = None
         session.last_frame_id = ""
@@ -977,6 +985,7 @@ async def _pin_evidence_photo(session: IntakeSession, args: dict[str, Any]) -> d
              "lighting": "poor" if too_dark else "ok",
              "document_types": [k for k in observation.document_types if k in DOCUMENT_KEYS.values()], "captured_at": captured_at}
     session.evidence_photos.append(photo)
+    session.camera_retries = 0
     session.camera_notes.append(f"Capture {photo['id']}: {photo['caption']}. Statement supplied to capture tool: {claimant_said or 'none'}. Verification: {'confirmed' if photo['confirmed'] else 'unconfirmed'}.")
     session.revision += 1
     result = {"pinned": True, "confirmed": photo["confirmed"], "observation": photo["caption"], "evidence_id": photo["id"], "photo_count": len(session.evidence_photos), "lighting": photo["lighting"]}
@@ -1171,6 +1180,20 @@ async def live_voice(websocket: WebSocket) -> None:
             turn_complete=True,
         )
 
+    async def move_on_from_camera():
+        """Two unsuccessful looks is enough: note that photos are pending and continue the claim."""
+        live_session = live_ref["session"]
+        if not live_session or not await wait_until_idle():
+            return
+        await live_session.send_client_content(
+            turns=types.Content(role="user", parts=[types.Part(text=(
+                "APP CAMERA STATE: you have asked twice for a better view and it is still not clear. Stop asking for "
+                "adjustments. Say kindly that it's hard to make out on camera, that photos can be added to the claim later, "
+                "and move on to the next item. Do not ask for the camera again on this call unless the claimant offers. "
+                "This notice is app state, not a claimant statement."))]),
+            turn_complete=True,
+        )
+
     async def steer_back_after_off_checklist():
         live_session = live_ref["session"]
         if not live_session or not await wait_until_idle():
@@ -1289,7 +1312,8 @@ async def live_voice(websocket: WebSocket) -> None:
             already_closing = bool(CLOSING_LINE.search(pending["Agent"]["text"])) or any(
                 t["speaker"] == "Agent" and CLOSING_LINE.search(t["text"]) for t in session.transcript)
             if (state.get("closing_allowed") and not state.get("closed") and not already_closing and not session.closing_nudged
-                    and live_session and not turn_state["awaiting_reply"] and not pending["Claimant"]["text"].strip()):
+                    and live_session and not session.camera_enabled  # the claimant is still showing something: close afterwards
+                    and not turn_state["awaiting_reply"] and not pending["Claimant"]["text"].strip()):
                 # Everything is collected and the claimant is quiet: prompt the closing once instead of stalling.
                 session.closing_nudged = True
                 if not await wait_until_idle() or claimant_is_active():
@@ -1349,6 +1373,12 @@ async def live_voice(websocket: WebSocket) -> None:
         await send({"type": "transcript", "speaker": speaker, "text": turn["text"], "id": turn["id"], "final": True})
         if speaker == "Agent" and CAMERA_ASK.search(turn["text"]) and not session.camera_enabled:
             await send({"type": "camera_request"})
+        if speaker == "Agent" and session.camera_enabled and CAMERA_RETRY.search(turn["text"]):
+            session.camera_retries += 1
+            if session.camera_retries == 2 or session.closed:
+                track(asyncio.create_task(move_on_from_camera()))
+        elif speaker == "Claimant":
+            pass
         pending[speaker] = {"id": uuid.uuid4().hex, "text": ""}
         if speaker == "Claimant":
             claimant_spoke()
@@ -1638,6 +1668,10 @@ async def live_voice(websocket: WebSocket) -> None:
                                         logger.warning("Silence placeholder from agent dropped: %r", (pending["Agent"]["text"] + chunk.text)[:60])
                                         await send({"type": "interrupted"})
                                         pending["Agent"] = {"id": uuid.uuid4().hex, "text": ""}
+                                        if turn_state["awaiting_reply"] and not turn_state["nudged"]:
+                                            # The claimant DID just speak, so a real reply is owed: prompt once for it.
+                                            turn_state["nudged"] = True
+                                            track(asyncio.create_task(nudge_if_silent(live_session, delay=0.5)))
                                         continue
                                     if OFF_CHECKLIST_ASK.search(pending["Agent"]["text"] + chunk.text) and time.monotonic() - turn_state["meta_guard_at"] > 20:
                                         turn_state["meta_guard_at"] = time.monotonic()
