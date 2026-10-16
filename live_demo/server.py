@@ -102,6 +102,10 @@ FRAME_MAX_AGE_SECONDS = 12.0
 SILENCE_PLACEHOLDER = re.compile(r"^\W*(no speech|no audio|silence|\(silence\)|\[silence\]|no response|\.\.\.)\W*$", re.IGNORECASE)
 # The agent asked the claimant to show something: the app should open the camera for them.
 CAMERA_ASK = re.compile(r"\b(show me|hold (it|that|the card|the form|them) up|point (the|your) camera|turn on (the|your) camera|on (the|your) camera|use (the|your) camera)\b", re.IGNORECASE)
+# Status the agent may never invent before the real closing: nothing is submitted, reviewed, or followed up by the agent.
+PREMATURE_CLOSE = re.compile(r"\b(being submitted|has been submitted|is (now )?submitted|submitted (for|to) (a )?(human )?review|sent (to|for) (an? )?(adjuster|review)|(human|a) reviewer will|will (get in touch|reach out|contact you|be in touch)|we('ll| will) (call|email) you)\b", re.IGNORECASE)
+# Documents that are not on the auto checklist. The prompt forbids asking for them; this backstop cuts the question.
+OFF_CHECKLIST_ASK = re.compile(r"\b(repair )?(estimates?|receipts?|invoices?|medical (records?|bills?|documentation|documents?)|mileage|odometer|VIN)\b.*\?", re.IGNORECASE | re.DOTALL)
 CLOSING_LINE = re.compile(r"packet is (now )?ready|review (it )?in the app|once you submit", re.IGNORECASE)
 # The agent must speak English; a transcript chunk in another script means the voice drifted (seen: Spanish, Devanagari).
 NON_LATIN = re.compile(r"[\u0400-\u04FF\u0590-\u05FF\u0600-\u06FF\u0900-\u0DFF\u0E00-\u0E7F\u3040-\u30FF\u3400-\u9FFF\uAC00-\uD7AF]")
@@ -263,6 +267,8 @@ class IntakeSession:
     app_context: dict[str, str] = field(default_factory=dict)
     dark_streak: int = 0
     closing_nudged: bool = False
+    closing_allowed_latest: bool = False
+    closed: bool = False   # the agent has spoken the closing line; stays true even if later notes reshuffle
     quality_task: Any = None
     quality_notified_at: float = 0.0
     dark_notice_active: bool = False
@@ -669,7 +675,8 @@ def _state_from_workflow(session: IntakeSession, workflow: dict[str, Any]) -> di
     agent_text = " ".join(t["text"] for t in session.transcript if t["speaker"] == "Agent")
     summary = summarize_workflow_for_voice(workflow, convo_text)
     state["closing_allowed"] = summary["closing_allowed"]
-    state["closed"] = summary["closing_allowed"] and bool(re.search(r"packet is (now )?ready|once you submit", agent_text.lower()))
+    session.closing_allowed_latest = bool(summary["closing_allowed"])
+    state["closed"] = session.closed or (summary["closing_allowed"] and bool(re.search(r"packet is (now )?ready|once you submit", agent_text.lower())))
     return state
 
 
@@ -1157,6 +1164,33 @@ async def live_voice(websocket: WebSocket) -> None:
             turn_complete=True,
         )
 
+    async def steer_back_after_off_checklist():
+        live_session = live_ref["session"]
+        if not live_session or not await wait_until_idle():
+            return
+        await live_session.send_client_content(
+            turns=types.Content(role="user", parts=[types.Part(text=(
+                "APP EVENT: your last question was cut off because it asked for something that is not on this claim's checklist "
+                "(estimates, receipts, invoices, medical records). Only photos of the damage, a police report or exchange form, "
+                "and the other driver's or witnesses' details are collected here. If any of those is still in "
+                "documents_not_yet_asked_about, ask about it now; otherwise say nothing and wait for the closing. "
+                "Do not mention this. This notice is app state, not a claimant statement."))]),
+            turn_complete=True,
+        )
+
+    async def steer_back_after_premature_close():
+        live_session = live_ref["session"]
+        if not live_session or not await wait_until_idle():
+            return
+        await live_session.send_client_content(
+            turns=types.Content(role="user", parts=[types.Part(text=(
+                "APP EVENT: your last line was cut off because it described the packet as submitted, under review, or promised "
+                "follow-up. None of that has happened: the claimant submits the packet themselves in the app after your closing "
+                "message, and nobody contacts them before then. Say instead, in one warm sentence, that you're just finishing up "
+                "your notes and will confirm in a moment. Do not mention this. This notice is app state, not a claimant statement."))]),
+            turn_complete=True,
+        )
+
     async def steer_back_after_meta():
         live_session = live_ref["session"]
         if not live_session or not await wait_until_idle():
@@ -1257,9 +1291,12 @@ async def live_voice(websocket: WebSocket) -> None:
                 await live_session.send_client_content(
                     turns=types.Content(role="user", parts=[types.Part(text=(
                         "APP EVENT: the claim packet is complete (closing_allowed is true) and the claimant is waiting. "
-                        "Briefly summarize the claim in one or two sentences, then give the closing message: the packet is "
-                        "ready, they can review it in the app, and once they submit it an adjuster will get started. "
-                        "This notice is app state, not a claimant statement."))]),
+                        + ("Someone was hurt, so say in one warm sentence that you've flagged the claim for urgent human review "
+                           "because of the injury and that they should get medical care if they haven't, then " if state.get("route") == "emergency_escalation" else
+                           "Briefly summarize the claim in one or two sentences, then ")
+                        + "give the closing message: the packet is ready, they can review it in the app, and once they submit it "
+                        "an adjuster will get started" + (" right away. " if state.get("route") == "emergency_escalation" else ". ")
+                        + "This notice is app state, not a claimant statement."))]),
                     turn_complete=True,
                 )
             return workflow
@@ -1314,7 +1351,9 @@ async def live_voice(websocket: WebSocket) -> None:
             track(asyncio.create_task(follow_up_if_quiet(turn["id"], asked_question="?" in turn["text"])))
         if speaker == "Agent" and CLOSING_LINE.search(turn["text"]) and session.last_workflow:
             # The closing line is an agent turn, so no claim-graph run follows it: push the state now so the
-            # app flips to "closed" (Review & submit) the moment the line is spoken.
+            # app flips to "closed" (Review & submit) the moment the line is spoken. The guards keep the agent
+            # from saying it early, so once said, the claim stays closed even if later notes add a loose end.
+            session.closed = True
             await send({"type": "state", "state": _current_ui_state(session)})
 
     async def publish_tool(entry):
@@ -1584,6 +1623,22 @@ async def live_voice(websocket: WebSocket) -> None:
                                         logger.warning("Silence placeholder from agent dropped: %r", (pending["Agent"]["text"] + chunk.text)[:60])
                                         await send({"type": "interrupted"})
                                         pending["Agent"] = {"id": uuid.uuid4().hex, "text": ""}
+                                        continue
+                                    if OFF_CHECKLIST_ASK.search(pending["Agent"]["text"] + chunk.text) and time.monotonic() - turn_state["meta_guard_at"] > 20:
+                                        turn_state["meta_guard_at"] = time.monotonic()
+                                        logger.warning("Off-checklist guard tripped: %r", (pending["Agent"]["text"] + chunk.text)[:160])
+                                        await send({"type": "interrupted"})
+                                        pending["Agent"] = {"id": uuid.uuid4().hex, "text": ""}
+                                        track(asyncio.create_task(steer_back_after_off_checklist()))
+                                        continue
+                                    if (not session.closing_allowed_latest and PREMATURE_CLOSE.search(pending["Agent"]["text"] + chunk.text)
+                                            and time.monotonic() - turn_state["meta_guard_at"] > 20):
+                                        # Invented status ("being submitted for review", "we'll get in touch") before the claim can close.
+                                        turn_state["meta_guard_at"] = time.monotonic()
+                                        logger.warning("Premature-close guard tripped: %r", (pending["Agent"]["text"] + chunk.text)[:160])
+                                        await send({"type": "interrupted"})
+                                        pending["Agent"] = {"id": uuid.uuid4().hex, "text": ""}
+                                        track(asyncio.create_task(steer_back_after_premature_close()))
                                         continue
                                     drifted = len(NON_LATIN.findall(chunk.text)) >= 3
                                     if not drifted and NON_LATIN.search(chunk.text):

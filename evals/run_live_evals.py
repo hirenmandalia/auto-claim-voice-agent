@@ -19,6 +19,7 @@ from server import META_TALK  # noqa: E402
 
 ACCOUNT = {"policyholder_name": "Jordan Lee", "policy_number": "AUTO-90210", "vehicle": "2013 Toyota Sienna"}
 CLOSING = re.compile(r"packet is (now )?ready|review (it )?in the app|once you submit", re.I)
+PREMATURE = re.compile(r"being submitted|has been submitted|submitted (for|to) (a )?(human )?review|sent (to|for) (an? )?(adjuster|review)|reviewer will|will (get in touch|reach out|contact you|be in touch)", re.I)
 ASKS_POLICY = re.compile(r"\b(policy number|what is your name|your full name|confirm your name)\b", re.I)
 ASKS_DATE_AGAIN = re.compile(r"\b(when did (this|it|the accident) happen|what (date|day) did)\b", re.I)
 DARK_WORDS = re.compile(r"\b(dark|light|lighting|flashlight|brighter)\b", re.I)
@@ -104,6 +105,10 @@ async def common_checks(c, failures):
     if META_TALK.search(text): failures.append(f"meta-talk leaked: {META_TALK.search(text).group(0)!r}")
     if re.search(r"\bdemo\b", text, re.I): failures.append("agent said 'demo'")
     if ASKS_POLICY.search(text): failures.append(f"asked for name/policy: {ASKS_POLICY.search(text).group(0)!r}")
+    order = [t["text"] for t in c.agent_turns]
+    first_close = next((i for i, t in enumerate(order) if CLOSING.search(t)), len(order))
+    early = next((t for t in order[:first_close] if PREMATURE.search(t)), None)
+    if early: failures.append(f"invented submission/review status before the closing: {early!r}")
     foreign = re.findall(r"[\u0400-\u04FF\u0590-\u05FF\u0600-\u06FF\u0900-\u0DFF\u3040-\u30FF\u3400-\u9FFF\uAC00-\uD7AF]", text)
     if len(foreign) >= 3: failures.append(f"non-Latin script in agent transcript: {''.join(foreign[:8])!r}")
     elif foreign: print(f"      note: stray glyph(s) {''.join(foreign)!r} in transcript (sanitized server-side; not a failure)")
@@ -153,6 +158,9 @@ async def scenario_full_call_closes(c, f):
         if "?" not in reply: continue  # acknowledgment only; the next turn (question or closing) follows
         line = next((a for pat, a in answers if pat.search(reply)), "No, I don't have that.")
         await c.say(line); turns += 1
+    if not CLOSING.search(c.agent_text()):
+        await c.say("Okay. Are we done here?")  # the question that produced invented status language on the phone
+        await c.next_agent_turn(25)
     closed = await c.wait_for(lambda: CLOSING.search(c.agent_text()) is not None, 45, "closing")
     if not closed: return f.append(f"no closing line after {turns} answers; last agent: {c.agent_turns[-1]['text'] if c.agent_turns else None!r}")
     await c.wait_for(lambda: c.state.get("closed"), 20, "state.closed")
@@ -242,6 +250,37 @@ async def scenario_collects_other_driver_on_camera(c, f):
     if bad: f.append(f"deferred the details instead of collecting them: {bad!r}")
 
 
+async def scenario_injury_escalates_and_closes(c, f):
+    """Claimant reports neck pain: the route escalates, the agent gives safety guidance, still works the checklist, and closes
+    with the urgent-review wording instead of stalling on 'finishing my notes'."""
+    await c.wait_agent_turn(12)
+    await c.say("We're out of the car, but my neck hurts a little. Another car hit us from the side a few minutes ago in Pleasanton near Valley Avenue and Santa Rita Road. Phone is best.")
+    c.consumed = len(c.agent_turns)
+    answers = [(re.compile(r"hurt|injur|pain|medical|doctor", re.I), "It's just a sore neck, I can talk."),
+               (re.compile(r"photo|picture|camera|show me", re.I), "I can't get to the car right now."),
+               (re.compile(r"police|report|exchange", re.I), "No police report."),
+               (re.compile(r"other driver|other party|witness|their (details|information|insurance)|anyone else", re.I), "The other driver gave me nothing and left, and there were no witnesses.")]
+    turns = 0
+    while turns < 8 and not CLOSING.search(c.agent_text()):
+        reply = await c.next_agent_turn(25)
+        if reply is None: break
+        if CLOSING.search(reply): break
+        if "?" not in reply: continue
+        line = next((a for pat, a in answers if pat.search(reply)), "No, I don't have that.")
+        await c.say(line); turns += 1
+    if not CLOSING.search(c.agent_text()):
+        await c.say("Are you done? Do you need anything else from me?"); await c.next_agent_turn(25)
+    closed = await c.wait_for(lambda: CLOSING.search(c.agent_text()) is not None, 45, "closing")
+    if not closed: return f.append(f"no closing line; last agent: {c.agent_turns[-1]['text'] if c.agent_turns else None!r}")
+    await c.wait_for(lambda: c.state.get("closed"), 20, "state.closed")
+    if c.state.get("route") != "emergency_escalation": f.append(f"route is {c.state.get('route')!r}, expected emergency_escalation after a reported injury")
+    if not c.state.get("closed"): f.append("state.closed never became true")
+    closing = next((t["text"] for t in c.agent_turns if CLOSING.search(t["text"])), "")
+    if not re.search(r"urgent|immediate|human (representative|review)|medical", closing, re.I): f.append(f"closing lacks the urgent-review/medical wording: {closing!r}")
+    stalls = [t["text"] for t in c.agent_turns if re.search(r"finishing up my notes", t["text"], re.I)]
+    if len(stalls) > 1: f.append(f"stalled on 'finishing my notes' {len(stalls)} times")
+
+
 SCENARIOS = {
     "greeting": scenario_greeting,
     "latency_single_reply": scenario_latency_and_single_reply,
@@ -250,6 +289,7 @@ SCENARIOS = {
     "voice_cancels_reask": scenario_voice_cancels_reask,
     "dark_camera": scenario_dark_camera,
     "collects_other_driver_on_camera": scenario_collects_other_driver_on_camera,
+    "injury_escalates_and_closes": scenario_injury_escalates_and_closes,
 }
 
 

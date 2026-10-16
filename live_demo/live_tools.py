@@ -104,6 +104,9 @@ You work with a claim team that runs in the background while you talk:
   When a sketch is successfully returned, call it an illustration of their account
   and ask whether it looks right. Keep any real photographs alongside it.
 
+Injuries: when someone is hurt, say once, warmly, that they should get medical care, then continue the
+claim; do not give care instructions (rest, ice, posture), do not ask who was treated or whether they
+plan to see a doctor, and do not repeat the medical reminder until the closing.
 Safety first: distinguish current danger or injury from a denial or resolved past event.
 "No one is hurt" and "no mold or electrical hazard" are negative facts, not emergencies.
 If the claimant reports current injury, unsafe housing, or immediate danger,
@@ -132,7 +135,15 @@ The call has three phases, in this order, and never skips ahead:
    Ask about nothing else: no repair estimates, receipts, medical records, mileage, or any item
    that is not in documents_not_yet_asked_about. If the claimant already answered an item before
    you asked, do not ask it; move to the next one.
-3. Closing: only when the latest sync_claim_packet result says closing_allowed is true.
+   If the claimant asks whether you are done or need anything else before closing_allowed is true,
+   say warmly that you're just finishing up your notes and will confirm in a moment. Never say the
+   packet was submitted, sent for review, that a reviewer will look at it, or that someone will get
+   in touch: the claimant submits it themselves in the app after your closing message, and nothing
+   happens before then.
+3. Closing: only when the latest sync_claim_packet result says closing_allowed is true. If someone
+   was hurt, the closing adds that the claim is flagged for urgent human review and that they should
+   get medical care; everything else about the closing stays the same, and you still never say the
+   packet was submitted or that someone will contact them.
    Never say the packet is ready, or mention submitting, before that. Once you have
    closed, do not ask for anything else.
 Never promise coverage, payment, liability, benefits, or approval. Policy details
@@ -533,6 +544,10 @@ def summarize_workflow_for_voice(workflow: dict[str, Any], agent_text: str = "")
     ]
     not_yet_asked = [item for item in outstanding_docs if not document_addressed(item, agent_text)]
     open_items = validation.get("missing_fields", [])
+    # Once injury status is known (hurt or not), injury follow-ups (who was treated, where, how badly) belong to the
+    # adjuster, not the call: hide them from the agent so it does not interrogate someone who is hurt.
+    if (workflow.get("normalized_claim") or {}).get("safety_facts"):
+        open_items = [i for i in open_items if not re.search(r"injur|hurt|treat|medical|hospital|doctor", str(i), re.I)]
     core_keys = {"policyholder_name", "policy_number", "contact_method", "date_of_loss", "loss_location", "loss_description"}
     core_open = [i for i in open_items if i in core_keys or re.search(r"\b(date|when|location|where|what happened|cause|describ)", str(i), re.I)]
     closing_allowed = not core_open and not not_yet_asked
@@ -556,7 +571,11 @@ def summarize_workflow_for_voice(workflow: dict[str, Any], agent_text: str = "")
         "open_documents": outstanding_docs[:3],
         "documents_not_yet_asked_about": not_yet_asked,
         "closing_allowed": closing_allowed,
-        "closing_rule": ("You may now summarize and give the closing message." if closing_allowed else
+        "closing_rule": (("Someone was hurt, so this claim is flagged for urgent human review. Close now: say in one warm sentence "
+                          "that you've flagged it for urgent review because of the injury and that they should get medical care if "
+                          "they haven't, then the closing message: the packet is ready, they can review it in the app, and once they "
+                          "submit it an adjuster will get started right away.") if (closing_allowed and route == "emergency_escalation") else
+                         "You may now summarize and give the closing message." if closing_allowed else
                          "Do NOT close yet. First collect core_facts_still_needed, then ask about each item in documents_not_yet_asked_about, one per turn; the claimant saying they do not have it is a fine answer."),
         "suggested_question_when_topic_is_closed": packet["claimant_next_message"],
         "how_to_use": (

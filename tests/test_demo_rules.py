@@ -186,6 +186,20 @@ class ServerHelpers(unittest.TestCase):
         for t in good[:2]:
             self.assertFalse(server.META_TALK.search(t), t)
 
+    def test_off_checklist_guard(self):
+        """Incident: 'Do you have any receipts, estimates, or invoices related to the damage?' despite the prompt rule."""
+        for t in ("Do you have any receipts, estimates, or invoices related to the damage?", "Could you share a repair estimate?", "Do you have medical records for the injury?"):
+            self.assertTrue(server.OFF_CHECKLIST_ASK.search(t), t)
+        for t in ("Do you have a police report or exchange form?", "Rental reimbursement is on your policy.", "I've noted the estimate you mentioned."):
+            self.assertFalse(server.OFF_CHECKLIST_ASK.search(t), t)
+
+    def test_premature_close_guard(self):
+        """Incident: 'your packet is now being submitted for a human review' and 'we will get in touch' before the real closing."""
+        for t in ("Your claim packet is now being submitted for a human review.", "We will get in touch with you as soon as the review is complete.", "A human reviewer will look over your policy details."):
+            self.assertTrue(server.PREMATURE_CLOSE.search(t), t)
+        for t in ("Your claim packet is ready, you can review it in the app, and once you submit it, an adjuster will get started.", "I'm just finishing up my notes and will confirm in a moment."):
+            self.assertFalse(server.PREMATURE_CLOSE.search(t), t)
+
     def test_silence_placeholders_and_camera_asks(self):
         """Incidents: the agent said 'No speech' aloud; 'you can provide that in the app' instead of opening the camera."""
         for t in ("No speech.", " no speech ", "No response", "[silence]"):
